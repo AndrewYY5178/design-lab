@@ -27,32 +27,20 @@ body{
   overflow-x:hidden;
 }
 
-/* ── Background: subtle floating shapes for glass to blur ── */
-.bg-shapes{
+/* ── Starfield background for glass to blur ── */
+.stars{
   position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
 }
-.bg-shapes .orb{
-  position:absolute;border-radius:50%;filter:blur(80px);opacity:0.25;
+.star{
+  position:absolute;border-radius:50%;
+  background:white;
+  animation:twinkle var(--dur) ease-in-out infinite;
+  animation-delay:var(--delay);
+  opacity:0;
 }
-.bg-shapes .orb:nth-child(1){
-  width:500px;height:500px;
-  background:radial-gradient(circle,rgba(140,160,220,0.5),transparent);
-  top:-10%;left:-15%;
-}
-.bg-shapes .orb:nth-child(2){
-  width:400px;height:400px;
-  background:radial-gradient(circle,rgba(180,140,200,0.4),transparent);
-  top:40%;right:-10%;
-}
-.bg-shapes .orb:nth-child(3){
-  width:350px;height:350px;
-  background:radial-gradient(circle,rgba(200,170,140,0.35),transparent);
-  bottom:-5%;left:20%;
-}
-.bg-shapes .orb:nth-child(4){
-  width:250px;height:250px;
-  background:radial-gradient(circle,rgba(140,180,200,0.3),transparent);
-  top:60%;left:50%;
+@keyframes twinkle{
+  0%,100%{opacity:var(--min);transform:scale(1);}
+  50%{opacity:var(--max);transform:scale(var(--scale));}
 }
 
 /* ── Noise ── */
@@ -66,9 +54,6 @@ body::after{
 .page{
   max-width:720px;margin:0 auto;padding:100px 24px 160px;
   position:relative;z-index:1;
-  /* 3D perspective for the whole page */
-  perspective:1500px;
-  perspective-origin:50% 30%;
 }
 
 /* ── Glass card ── */
@@ -213,11 +198,8 @@ body::after{
 </head>
 <body>
 
-<!-- Background shapes for glass to blur -->
-<div class="bg-shapes">
-  <div class="orb"></div><div class="orb"></div>
-  <div class="orb"></div><div class="orb"></div>
-</div>
+<!-- Starfield -->
+<div class="stars" id="stars"></div>
 
 <div class="page">
 
@@ -314,72 +296,49 @@ body::after{
 
 <script>
 // ============================================================
-// COMBINED TILT + PARALLAX + HIGHLIGHT
+// STARFIELD GENERATION
 // ============================================================
-const cards = document.querySelectorAll('.glass');
-const parallaxItems = document.querySelectorAll('[data-parallax]');
-let mx=0.5, my=0.5;
-let gyroX=0, gyroY=0;
-let hasGyro=false;
+const starsEl=document.getElementById('stars');
+for(let i=0;i<120;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  const size=1+Math.random()*3;
+  s.style.cssText=`
+    width:${size}px;height:${size}px;
+    top:${Math.random()*100}%;left:${Math.random()*100}%;
+    --dur:${2+Math.random()*5}s;
+    --delay:${Math.random()*5}s;
+    --min:${0.1+Math.random()*0.3};
+    --max:${0.5+Math.random()*0.5};
+    --scale:${1.5+Math.random()*2};
+  `;
+  starsEl.appendChild(s);
+}
 
-// Track tilt + parallax separately, combine in one update
-const cardState = new Map();
-cards.forEach(c=>cardState.set(c,{tiltX:0,tiltY:0,parallaxY:0}));
+// ============================================================
+// MOUSE HIGHLIGHT + PARALLAX (no tilt)
+// ============================================================
+const cards=document.querySelectorAll('.glass');
+const parallaxItems=document.querySelectorAll('[data-parallax]');
 
-/* ── Mouse tilt + highlight ── */
+const cardState=new Map();
+cards.forEach(c=>cardState.set(c,{parallaxY:0}));
+
+function applyTransform(card){
+  const st=cardState.get(card);
+  card.style.transform=`translateY(${st.parallaxY}px)`;
+}
+
+/* ── Mouse highlight ── */
 document.addEventListener('mousemove',e=>{
-  mx=e.clientX/window.innerWidth;
-  my=e.clientY/window.innerHeight;
-
   cards.forEach(card=>{
     const r=card.getBoundingClientRect();
     const lx=(e.clientX-r.left)/r.width;
     const ly=(e.clientY-r.top)/r.height;
-
-    // Highlight position
     card.style.setProperty('--mx',`${lx*100}%`);
     card.style.setProperty('--my',`${ly*100}%`);
-
-    // Tilt: ±10° horizontal, ±8° vertical — dramatic
-    const st=cardState.get(card);
-    if(!hasGyro){
-      st.tiltX=(ly-0.5)*-16; // -8 to +8
-      st.tiltY=(lx-0.5)*20;  // -10 to +10
-    }
-    applyTransform(card);
   });
 });
-
-/* ── Gyroscope ── */
-if(window.DeviceOrientationEvent){
-  window.addEventListener('deviceorientation',e=>{
-    if(e.gamma==null||e.beta==null)return;
-    gyroY=Math.max(-1,Math.min(1,e.gamma/20));
-    gyroX=Math.max(-1,Math.min(1,e.beta/20));
-    hasGyro=true;
-    cards.forEach(card=>{
-      const st=cardState.get(card);
-      st.tiltX=gyroX*10;
-      st.tiltY=gyroY*14;
-      applyTransform(card);
-    });
-  });
-}
-
-function applyTransform(card){
-  const st=cardState.get(card);
-  card.style.transform=
-    `perspective(1200px) rotateX(${st.tiltX}deg) rotateY(${st.tiltY}deg) translateY(${st.parallaxY}px)`;
-
-  // Dynamic shadow based on tilt
-  const sx=st.tiltY*1.5;
-  const sy=st.tiltX*1.5;
-  const blur=30+Math.abs(st.tiltX)*2;
-  card.style.boxShadow=
-    `${sx}px ${sy}px ${blur}px rgba(0,0,0,0.5), `+
-    `${sx*0.3}px ${sy*0.3}px 8px rgba(0,0,0,0.3), `+
-    `inset 0 1px 0 rgba(255,255,255,${0.04+Math.abs(st.tiltX)*0.005})`;
-}
 
 /* ── Parallax ── */
 function updateParallax(){
@@ -390,7 +349,7 @@ function updateParallax(){
     const offset=(center-ch/2)/ch;
     const speed=parseFloat(card.dataset.parallax);
     const st=cardState.get(card);
-    st.parallaxY=offset*speed*60;
+    st.parallaxY=offset*speed*50;
     applyTransform(card);
   });
   if(window.scrollY>100)document.getElementById('scrollHint').classList.add('faded');
