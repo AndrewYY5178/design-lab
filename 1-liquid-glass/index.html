@@ -12,8 +12,6 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
 :root{
-  --glass-bg:rgba(20,20,28,0.18);
-  --glass-border:rgba(255,255,255,0.05);
   --text:#f0eeea;
   --text-muted:#b0ada6;
 }
@@ -27,25 +25,14 @@ body{
   overflow-x:hidden;
 }
 
-/* ── Starfield background for glass to blur ── */
-.stars{
-  position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
-}
-.star{
-  position:absolute;border-radius:50%;
-  background:white;
-  animation:twinkle var(--dur) ease-in-out infinite;
-  animation-delay:var(--delay);
-  opacity:0;
-}
-@keyframes twinkle{
-  0%,100%{opacity:var(--min);transform:scale(1);}
-  50%{opacity:var(--max);transform:scale(var(--scale));}
+/* ── Silk wave canvas background ── */
+#bg-canvas{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
 }
 
-/* ── Noise ── */
+/* ── Noise overlay ── */
 body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.02;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:998;opacity:.015;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:128px 128px;
 }
@@ -56,64 +43,53 @@ body::after{
   position:relative;z-index:1;
 }
 
-/* ── Glass card ── */
+/* ── Apple-style glass card — ultra transparent ── */
 .glass{
   position:relative;
-  background:var(--glass-bg);
-  backdrop-filter:blur(12px) saturate(1.6);
-  -webkit-backdrop-filter:blur(12px) saturate(1.6);
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(40px) saturate(1.5);
+  -webkit-backdrop-filter:blur(40px) saturate(1.5);
   border-radius:20px;
   padding:40px 44px;
   margin-bottom:36px;
   overflow:hidden;
 
-  /* Subtle depth */
-  border-top:1px solid rgba(255,255,255,0.08);
-  border-left:1px solid rgba(255,255,255,0.04);
-  border-right:1px solid rgba(255,255,255,0.03);
-  border-bottom:1px solid rgba(255,255,255,0.02);
+  /* Thin bright edge — the key to Apple's glass look */
+  border:0.5px solid rgba(255,255,255,0.12);
+  outline:0.5px solid rgba(255,255,255,0.04);
+  outline-offset:-2px;
 
   box-shadow:
-    0 4px 30px rgba(0,0,0,0.4),
-    0 1px 4px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.03);
-
-  /* Smooth transition for shadow/transform */
-  transition: box-shadow 0.4s ease;
-
-  /* 3D */
-  transform-style:preserve-3d;
+    0 8px 32px rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
-/* ── Specular highlight — bright diagonal stripe ── */
+/* ── Specular shine — diagonal light stripe ── */
 .glass::before{
   content:'';
   position:absolute;z-index:2;pointer-events:none;
   inset:0;border-radius:20px;
-  opacity:0.5;
   background:linear-gradient(
     135deg,
-    rgba(255,255,255,0.08) 0%,
-    rgba(255,255,255,0.03) 25%,
-    transparent 50%,
-    transparent 60%,
-    rgba(0,0,0,0.02) 85%,
-    rgba(0,0,0,0.06) 100%
+    rgba(255,255,255,0.06) 0%,
+    rgba(255,255,255,0.02) 30%,
+    transparent 55%,
+    transparent 65%,
+    rgba(0,0,0,0.02) 90%,
+    rgba(0,0,0,0.05) 100%
   );
 }
 
-/* ── Mouse highlight spot ── */
+/* ── Mouse highlight ── */
 .glass::after{
   content:'';
   position:absolute;z-index:3;pointer-events:none;
   inset:0;border-radius:20px;
-  opacity:0;
-  transition:opacity 0.3s ease;
-  background:radial-gradient(circle 180px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.15) 0%, transparent 100%);
+  opacity:0;transition:opacity 0.3s ease;
+  background:radial-gradient(circle 150px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.08) 0%, transparent 100%);
 }
 .glass:hover::after{opacity:1;}
 
-/* ── Inner content ── */
 .glass > *{position:relative;z-index:4;}
 
 /* ── Hero ── */
@@ -121,7 +97,7 @@ body::after{
 .glass.hero h1{
   font-family:'Playfair Display',serif;font-size:clamp(44px,8vw,84px);
   font-weight:900;letter-spacing:0.15em;line-height:1.1;
-  text-shadow:0 0 100px rgba(200,200,240,0.25);
+  text-shadow:0 0 100px rgba(200,200,240,0.2);
 }
 .glass.hero .tagline{
   font-family:'Playfair Display',serif;font-style:italic;
@@ -145,7 +121,7 @@ body::after{
 .glass.pull p{
   font-family:'Playfair Display',serif;font-style:italic;
   font-size:clamp(19px,3vw,27px);line-height:1.6;letter-spacing:0.03em;
-  text-shadow:0 0 50px rgba(200,200,240,0.12);
+  text-shadow:0 0 50px rgba(200,200,240,0.1);
 }
 
 /* ── Symbols ── */
@@ -154,7 +130,7 @@ body::after{
 .glass.symbols .big{
   font-family:'Playfair Display',serif;
   font-size:clamp(40px,6vw,60px);font-weight:900;line-height:1;
-  text-shadow:0 0 60px rgba(200,200,230,0.15);
+  text-shadow:0 0 60px rgba(200,200,230,0.12);
 }
 .glass.symbols .sub{font-size:14px;color:var(--text-muted);margin-top:10px;font-style:italic;letter-spacing:0.04em;}
 .glass.symbols .desc{font-size:13px;color:var(--text-muted);margin-top:8px;line-height:1.6;}
@@ -167,8 +143,8 @@ body::after{
 
 /* ── Flourish ── */
 .glass.flourish{display:flex;align-items:center;justify-content:center;gap:16px;padding:28px 44px;}
-.glass.flourish .line{width:50px;height:1px;background:rgba(255,255,255,0.15);}
-.glass.flourish .diamond{width:7px;height:7px;background:rgba(255,255,255,0.2);transform:rotate(45deg);}
+.glass.flourish .line{width:50px;height:1px;background:rgba(255,255,255,0.12);}
+.glass.flourish .diamond{width:7px;height:7px;background:rgba(255,255,255,0.15);transform:rotate(45deg);}
 
 /* ── Responsive ── */
 @media(max-width:540px){
@@ -181,24 +157,18 @@ body::after{
 .scroll-hint{
   position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;
   display:flex;flex-direction:column;align-items:center;pointer-events:none;
-  opacity:0.3;transition:opacity 0.6s ease;
+  opacity:0.25;transition:opacity 0.6s ease;
 }
-.scroll-hint.faded{opacity:0.05;}
+.scroll-hint.faded{opacity:0.04;}
 .scroll-hint .arrow{
-  width:20px;height:20px;border-right:1px solid rgba(255,255,255,0.5);
-  border-bottom:1px solid rgba(255,255,255,0.5);transform:rotate(45deg);
-}
-
-@media(prefers-reduced-motion:reduce){
-  .glass{transition:none!important;}
-  .glass::after{display:none;}
+  width:20px;height:20px;border-right:1px solid rgba(255,255,255,0.4);
+  border-bottom:1px solid rgba(255,255,255,0.4);transform:rotate(45deg);
 }
 </style>
 </head>
 <body>
 
-<!-- Starfield -->
-<div class="stars" id="stars"></div>
+<canvas id="bg-canvas"></canvas>
 
 <div class="page">
 
@@ -220,10 +190,7 @@ body::after{
       yet it also carries a deeper meaning: a word of <em>connection</em>,
       <em>continuation</em>, and <em>endless possibilities</em>.
     </p>
-    <p class="zh">
-      AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，
-      但这个词更深的含义是：连接、延续、与无限可能。
-    </p>
+    <p class="zh">AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，但这个词更深的含义是：连接、延续、与无限可能。</p>
   </div>
 
   <div class="glass pull" data-parallax="0.04">
@@ -236,10 +203,7 @@ body::after{
       It is also <strong>&ldquo;And&hellip; Dream.&rdquo;</strong>
       An unfinished sentence. A story still in motion.
     </p>
-    <p class="zh">
-      所以 AndDream 不只是「Andrew 的梦想」。它也是「And&hellip; Dream」——
-      一个永远未完成的句子，一个仍在继续的故事。
-    </p>
+    <p class="zh">所以 AndDream 不只是「Andrew 的梦想」。它也是「And&hellip; Dream」——一个永远未完成的句子，一个仍在继续的故事。</p>
   </div>
 
   <div class="glass symbols" data-parallax="0.06">
@@ -257,14 +221,8 @@ body::after{
   </div>
 
   <div class="glass content" data-parallax="0.04">
-    <p class="en" style="font-style:italic">
-      Every ending is followed by an &ldquo;And.&rdquo;<br>
-      Every dream leads to another dream.
-    </p>
-    <p class="zh">
-      每一个终点之后，都还有新的开始；<br>
-      每一个梦想实现之后，都孕育着下一个梦想。
-    </p>
+    <p class="en" style="font-style:italic">Every ending is followed by an &ldquo;And.&rdquo;<br>Every dream leads to another dream.</p>
+    <p class="zh">每一个终点之后，都还有新的开始；<br>每一个梦想实现之后，都孕育着下一个梦想。</p>
   </div>
 
   <div class="glass pull" data-parallax="0.04">
@@ -275,13 +233,9 @@ body::after{
     <p class="en">
       <strong>AndDream</strong> is a bridge between reality and imagination.
       It belongs to Andrew, yet it does not belong to Andrew alone.
-      It is a journey&thinsp;&mdash;&thinsp;of creation, of growth,
-      and of <em>infinite possibilities</em>.
+      It is a journey&thinsp;&mdash;&thinsp;of creation, of growth, and of <em>infinite possibilities</em>.
     </p>
-    <p class="zh">
-      AndDream 是一个连接现实与梦境的空间。它属于 Andrew，也不只属于 Andrew。
-      这是一段创造、成长、与无限可能的旅程。
-    </p>
+    <p class="zh">AndDream 是一个连接现实与梦境的空间。它属于 Andrew，也不只属于 Andrew。这是一段创造、成长、与无限可能的旅程。</p>
   </div>
 
   <div class="glass closing" data-parallax="0.06">
@@ -295,61 +249,97 @@ body::after{
 
 <script>
 // ============================================================
-// STARFIELD GENERATION
+// SILK WAVE BACKGROUND
 // ============================================================
-const starsEl=document.getElementById('stars');
-for(let i=0;i<120;i++){
-  const s=document.createElement('div');
-  s.className='star';
-  const size=1+Math.random()*3;
-  s.style.cssText=`
-    width:${size}px;height:${size}px;
-    top:${Math.random()*100}%;left:${Math.random()*100}%;
-    --dur:${2+Math.random()*5}s;
-    --delay:${Math.random()*5}s;
-    --min:${0.1+Math.random()*0.3};
-    --max:${0.5+Math.random()*0.5};
-    --scale:${1.5+Math.random()*2};
-  `;
-  starsEl.appendChild(s);
-}
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  const ctx=canvas.getContext('2d');
+  let w,h;
+
+  function resize(){w=canvas.width=window.innerWidth;h=canvas.height=window.innerHeight;}
+  window.addEventListener('resize',resize);resize();
+
+  // Simple 2D noise approximation
+  function noise(x,y,t){
+    let v=0;
+    v+=Math.sin(x*0.003+t*0.4)*Math.cos(y*0.004+t*0.3)*0.5;
+    v+=Math.sin(x*0.007-t*0.25)*Math.cos(y*0.005+t*0.35)*0.35;
+    v+=Math.sin(x*0.012+t*0.2)*Math.cos(y*0.009-t*0.22)*0.25;
+    v+=Math.sin((x+y)*0.006+t*0.15)*0.3;
+    return v;
+  }
+
+  function draw(t){
+    ctx.clearRect(0,0,w,h);
+
+    // Deep background
+    const bg=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w*0.8);
+    bg.addColorStop(0,'#0d0d1a');
+    bg.addColorStop(0.5,'#080814');
+    bg.addColorStop(1,'#050510');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+
+    // Silk waves — layered semi-transparent ribbons
+    const layers=[
+      {color:'rgba(30,40,90,0.12)',scale:0.8,speed:0.3,yOff:0},
+      {color:'rgba(50,40,100,0.10)',scale:1.2,speed:0.22,yOff:h*0.2},
+      {color:'rgba(40,50,120,0.08)',scale:0.9,speed:0.28,yOff:h*0.5},
+      {color:'rgba(60,50,110,0.07)',scale:1.5,speed:0.18,yOff:h*0.7},
+      {color:'rgba(35,45,95,0.09)',scale:1.0,speed:0.25,yOff:h*0.35},
+    ];
+
+    layers.forEach(l=>{
+      ctx.beginPath();
+      for(let x=0;x<=w;x+=3){
+        const y=l.yOff+noise(x,l.yOff,t)*h*0.7*l.scale+h*0.2;
+        if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      // Complete the ribbon shape
+      for(let x=w;x>=0;x-=3){
+        const y=l.yOff+noise(x,l.yOff,t)*h*0.7*l.scale+h*0.2+40;
+        ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.fillStyle=l.color;
+      ctx.fill();
+
+      // Subtle glow line along the top edge
+      ctx.beginPath();
+      for(let x=0;x<=w;x+=3){
+        const y=l.yOff+noise(x,l.yOff,t)*h*0.7*l.scale+h*0.2;
+        if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle='rgba(180,180,220,0.06)';
+      ctx.lineWidth=2;
+      ctx.stroke();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
 
 // ============================================================
-// MOUSE HIGHLIGHT + PARALLAX (no tilt)
+// MOUSE HIGHLIGHT + PARALLAX
 // ============================================================
 const cards=document.querySelectorAll('.glass');
-const parallaxItems=document.querySelectorAll('[data-parallax]');
 
-const cardState=new Map();
-cards.forEach(c=>cardState.set(c,{parallaxY:0}));
-
-function applyTransform(card){
-  const st=cardState.get(card);
-  card.style.transform=`translateY(${st.parallaxY}px)`;
-}
-
-/* ── Mouse highlight ── */
 document.addEventListener('mousemove',e=>{
   cards.forEach(card=>{
     const r=card.getBoundingClientRect();
-    const lx=(e.clientX-r.left)/r.width;
-    const ly=(e.clientY-r.top)/r.height;
-    card.style.setProperty('--mx',`${lx*100}%`);
-    card.style.setProperty('--my',`${ly*100}%`);
+    card.style.setProperty('--mx',`${((e.clientX-r.left)/r.width*100)}%`);
+    card.style.setProperty('--my',`${((e.clientY-r.top)/r.height*100)}%`);
   });
 });
 
 /* ── Parallax ── */
+const parallaxItems=document.querySelectorAll('[data-parallax]');
 function updateParallax(){
   const ch=window.innerHeight;
   parallaxItems.forEach(card=>{
     const r=card.getBoundingClientRect();
-    const center=r.top+r.height/2;
-    const offset=(center-ch/2)/ch;
-    const speed=parseFloat(card.dataset.parallax);
-    const st=cardState.get(card);
-    st.parallaxY=offset*speed*50;
-    applyTransform(card);
+    const offset=((r.top+r.height/2)-ch/2)/ch;
+    card.style.transform=`translateY(${offset*parseFloat(card.dataset.parallax)*50}px)`;
   });
   if(window.scrollY>100)document.getElementById('scrollHint').classList.add('faded');
 }
