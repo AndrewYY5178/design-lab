@@ -12,8 +12,8 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
 :root{
-  --glass-bg:rgba(20,20,28,0.45);
-  --glass-border:rgba(255,255,255,0.07);
+  --glass-bg:rgba(20,20,28,0.18);
+  --glass-border:rgba(255,255,255,0.05);
   --text:#f0eeea;
   --text-muted:#b0ada6;
 }
@@ -60,24 +60,23 @@ body::after{
 .glass{
   position:relative;
   background:var(--glass-bg);
-  backdrop-filter:blur(20px) saturate(2);
-  -webkit-backdrop-filter:blur(20px) saturate(2);
+  backdrop-filter:blur(12px) saturate(1.6);
+  -webkit-backdrop-filter:blur(12px) saturate(1.6);
   border-radius:20px;
   padding:40px 44px;
   margin-bottom:36px;
   overflow:hidden;
 
-  /* Depth layers */
-  border-top:1px solid rgba(255,255,255,0.14);
-  border-left:1px solid rgba(255,255,255,0.08);
-  border-right:1px solid rgba(255,255,255,0.05);
-  border-bottom:1px solid rgba(255,255,255,0.03);
+  /* Subtle depth */
+  border-top:1px solid rgba(255,255,255,0.08);
+  border-left:1px solid rgba(255,255,255,0.04);
+  border-right:1px solid rgba(255,255,255,0.03);
+  border-bottom:1px solid rgba(255,255,255,0.02);
 
-  /* Dynamic shadow — deep and moves with tilt */
   box-shadow:
-    0 8px 40px rgba(0,0,0,0.5),
-    0 2px 8px rgba(0,0,0,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.06);
+    0 4px 30px rgba(0,0,0,0.4),
+    0 1px 4px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.03);
 
   /* Smooth transition for shadow/transform */
   transition: box-shadow 0.4s ease;
@@ -94,12 +93,12 @@ body::after{
   opacity:0.5;
   background:linear-gradient(
     135deg,
-    rgba(255,255,255,0.18) 0%,
-    rgba(255,255,255,0.06) 20%,
-    transparent 45%,
-    transparent 55%,
-    rgba(0,0,0,0.04) 80%,
-    rgba(0,0,0,0.1) 100%
+    rgba(255,255,255,0.08) 0%,
+    rgba(255,255,255,0.03) 25%,
+    transparent 50%,
+    transparent 60%,
+    rgba(0,0,0,0.02) 85%,
+    rgba(0,0,0,0.06) 100%
   );
 }
 
