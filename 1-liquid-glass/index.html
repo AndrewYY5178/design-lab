@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AndDream — Liquid Glass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --glass-bg:rgba(255,255,255,0.06);
+  --glass-border:rgba(255,255,255,0.1);
+  --glass-highlight:rgba(255,255,255,0.12);
+  --text:#f0eeea;
+  --text-muted:#b0ada6;
+}
+
+body{
+  background:radial-gradient(ellipse at 50% 0%, #12121a 0%, #08080e 70%);
+  color:var(--text);
+  font-family:'Crimson Pro','Noto Serif SC',serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  overflow-x:hidden;
+  cursor:crosshair;
+}
+
+/* ── Noise overlay ── */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:128px 128px;
+}
+
+/* ── Page ── */
+.page{
+  max-width:720px;
+  margin:0 auto;
+  padding:80px 24px 120px;
+  position:relative;
+  z-index:1;
+}
+
+/* ── Glass card base ── */
+.glass{
+  position:relative;
+  background:var(--glass-bg);
+  backdrop-filter:blur(28px) saturate(1.8);
+  -webkit-backdrop-filter:blur(28px) saturate(1.8);
+  border:1px solid var(--glass-border);
+  border-radius:20px;
+  padding:40px 44px;
+  margin-bottom:32px;
+  overflow:hidden;
+  transition:transform 0.15s ease-out, box-shadow 0.3s ease;
+
+  /* 3D tilt setup */
+  transform-style:preserve-3d;
+  perspective:1000px;
+}
+
+/* ── Mouse highlight layer ── */
+.glass::before{
+  content:'';
+  position:absolute;inset:0;pointer-events:none;z-index:2;
+  border-radius:20px;
+  opacity:0;
+  transition:opacity 0.2s ease;
+  background:radial-gradient(circle 200px at var(--mx,50%) var(--my,50%), var(--glass-highlight) 0%, transparent 100%);
+}
+.glass:hover::before{opacity:1;}
+
+/* ── Edge glow on hover ── */
+.glass::after{
+  content:'';
+  position:absolute;inset:-1px;pointer-events:none;z-index:1;
+  border-radius:20px;
+  opacity:0;
+  transition:opacity 0.4s ease;
+  background:radial-gradient(circle 300px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06) 0%, transparent 100%);
+}
+.glass:hover::after{opacity:1;}
+
+/* ── Inner content layer ── */
+.glass > *{position:relative;z-index:3;}
+
+/* ── Hero card ── */
+.glass.hero{text-align:center;padding:64px 44px;}
+.glass.hero h1{
+  font-family:'Playfair Display',serif;font-size:clamp(44px,8vw,80px);
+  font-weight:900;letter-spacing:0.14em;color:var(--text);line-height:1.1;
+  text-shadow:0 0 80px rgba(200,200,230,0.2);
+}
+.glass.hero .tagline{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(15px,2.2vw,20px);color:var(--text-muted);
+  margin-top:16px;letter-spacing:0.06em;
+}
+
+/* ── Content card ── */
+.glass.content .en{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(17px,2.5vw,22px);line-height:1.7;letter-spacing:0.02em;
+}
+.glass.content .zh{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(14px,1.8vw,17px);line-height:2;letter-spacing:0.04em;
+  color:var(--text-muted);margin-top:14px;
+}
+
+/* ── Pull quote card ── */
+.glass.pull{text-align:center;padding:48px 36px;}
+.glass.pull p{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(19px,3vw,27px);line-height:1.6;letter-spacing:0.03em;
+  text-shadow:0 0 40px rgba(200,200,240,0.1);
+}
+
+/* ── Symbols card ── */
+.glass.symbols{display:flex;gap:40px;text-align:center;padding:48px 44px;}
+.glass.symbols .col{flex:1;}
+.glass.symbols .big{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(40px,6vw,60px);font-weight:900;line-height:1;
+  text-shadow:0 0 60px rgba(200,200,230,0.15);
+}
+.glass.symbols .sub{
+  font-size:14px;color:var(--text-muted);margin-top:10px;
+  font-style:italic;letter-spacing:0.04em;
+}
+.glass.symbols .desc{
+  font-size:13px;color:var(--text-muted);margin-top:8px;line-height:1.6;
+}
+.glass.symbols .divider{
+  width:1px;background:rgba(255,255,255,0.1);flex-shrink:0;
+}
+
+@media(max-width:540px){
+  .glass.symbols{flex-direction:column;gap:24px;}
+  .glass.symbols .divider{width:100%;height:1px;}
+}
+
+/* ── Closing card ── */
+.glass.closing{text-align:center;padding:48px 36px;}
+.glass.closing .en-close{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(16px,2vw,19px);letter-spacing:0.04em;
+}
+.glass.closing .zh-close{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(19px,2.5vw,25px);letter-spacing:0.12em;margin-top:12px;
+}
+
+/* ── Flourish card ── */
+.glass.flourish{
+  display:flex;align-items:center;justify-content:center;
+  gap:18px;padding:24px 44px;
+}
+.glass.flourish .line{width:56px;height:1px;background:rgba(255,255,255,0.15);}
+.glass.flourish .diamond{
+  width:7px;height:7px;background:rgba(255,255,255,0.2);transform:rotate(45deg);
+}
+
+/* ── Scroll hint ── */
+.scroll-hint{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  pointer-events:none;opacity:0.4;transition:opacity 0.6s ease;
+}
+.scroll-hint.faded{opacity:0.08;}
+.scroll-hint .arrow{
+  width:20px;height:20px;border-right:1px solid rgba(255,255,255,0.4);
+  border-bottom:1px solid rgba(255,255,255,0.4);transform:rotate(45deg);
+}
+
+/* ── Reduced motion ── */
+@media(prefers-reduced-motion:reduce){
+  .glass{transition:none!important;}
+  .glass::before,.glass::after{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- 1. Hero -->
+  <div class="glass hero" data-parallax="0.03">
+    <h1>ANDREAM</h1>
+    <p class="tagline">The Dream That Continues</p>
+  </div>
+
+  <!-- 2. Flourish -->
+  <div class="glass flourish" data-parallax="0.02" aria-hidden="true">
+    <span class="line"></span><span class="diamond"></span>
+    <span class="diamond" style="width:4px;height:4px;"></span>
+    <span class="diamond"></span><span class="line"></span>
+  </div>
+
+  <!-- 3. Block 1: Origin -->
+  <div class="glass content" data-parallax="0.025">
+    <p class="en">
+      <strong>AndDream</strong> is a name born from <em>Andrew</em>, yet it reaches far beyond.
+      It begins with <strong>&ldquo;And&rdquo;</strong>&thinsp;&mdash;&thinsp;the very first sound of my name,
+      yet it also carries a deeper meaning: a word of <em>connection</em>,
+      <em>continuation</em>, and <em>endless possibilities</em>.
+    </p>
+    <p class="zh">
+      AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，
+      但这个词更深的含义是：连接、延续、与无限可能。
+    </p>
+  </div>
+
+  <!-- 4. Pull quote 1 -->
+  <div class="glass pull" data-parallax="0.02">
+    <p>&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p>
+  </div>
+
+  <!-- 5. Block 2: "And... Dream" -->
+  <div class="glass content" data-parallax="0.025">
+    <p class="en">
+      So <strong>AndDream</strong> is not just &ldquo;Andrew&rsquo;s Dream.&rdquo;
+      It is also <strong>&ldquo;And&hellip; Dream.&rdquo;</strong>
+      An unfinished sentence. A story still in motion.
+    </p>
+    <p class="zh">
+      所以 AndDream 不只是「Andrew 的梦想」。它也是「And&hellip; Dream」——
+      一个永远未完成的句子，一个仍在继续的故事。
+    </p>
+  </div>
+
+  <!-- 6. Symbol cards -->
+  <div class="glass symbols" data-parallax="0.03">
+    <div class="col">
+      <div class="big">And</div>
+      <div class="sub">Connection &amp; Continuation</div>
+      <div class="desc">连接、以及、还有未来。每一个终点之后，都有新的开始。</div>
+    </div>
+    <div class="divider"></div>
+    <div class="col">
+      <div class="big">Dream</div>
+      <div class="sub">Imagination &amp; Creation</div>
+      <div class="desc">在艺术与音乐中，梦想是想象力、情感与内心宇宙。</div>
+    </div>
+  </div>
+
+  <!-- 7. Block 3: Philosophy -->
+  <div class="glass content" data-parallax="0.02">
+    <p class="en" style="font-style:italic">
+      Every ending is followed by an &ldquo;And.&rdquo;<br>
+      Every dream leads to another dream.
+    </p>
+    <p class="zh">
+      每一个终点之后，都还有新的开始；<br>
+      每一个梦想实现之后，都孕育着下一个梦想。
+    </p>
+  </div>
+
+  <!-- 8. Pull quote 2 -->
+  <div class="glass pull" data-parallax="0.02">
+    <p>
+      A space where ideas become melodies,<br>
+      emotions become expressions,<br>
+      and dreams become reality.
+    </p>
+  </div>
+
+  <!-- 9. Block 4: Bridge -->
+  <div class="glass content" data-parallax="0.025">
+    <p class="en">
+      <strong>AndDream</strong> is a bridge between reality and imagination.
+      It belongs to Andrew, yet it does not belong to Andrew alone.
+      It is a journey&thinsp;&mdash;&thinsp;of creation, of growth,
+      and of <em>infinite possibilities</em>.
+    </p>
+    <p class="zh">
+      AndDream 是一个连接现实与梦境的空间。它属于 Andrew，也不只属于 Andrew。
+      这是一段创造、成长、与无限可能的旅程。
+    </p>
+  </div>
+
+  <!-- 10. Closing -->
+  <div class="glass closing" data-parallax="0.03">
+    <p class="en-close">
+      AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>
+      and every dream begins with an &ldquo;And.&rdquo;
+    </p>
+    <p class="zh-close">与梦同行，永不止息。</p>
+  </div>
+
+</div>
+
+<!-- Scroll hint -->
+<div class="scroll-hint" id="scrollHint">
+  <div class="arrow"></div>
+</div>
+
+<script>
+// ============================================================
+// MOUSE HIGHLIGHT + 3D TILT
+// ============================================================
+const cards = document.querySelectorAll('.glass');
+let mx=0.5, my=0.5;
+
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX/window.innerWidth;
+  my=e.clientY/window.innerHeight;
+
+  cards.forEach(card=>{
+    const rect=card.getBoundingClientRect();
+    // Local mouse position within card (0–1)
+    const lx=(e.clientX-rect.left)/rect.width;
+    const ly=(e.clientY-rect.top)/rect.height;
+
+    // Update highlight position
+    card.style.setProperty('--mx',`${lx*100}%`);
+    card.style.setProperty('--my',`${ly*100}%`);
+
+    // 3D tilt (max ±3°)
+    const tiltX=(ly-0.5)*6;  // -3 to +3
+    const tiltY=(lx-0.5)*-6; // +3 to -3
+    card.style.transform=`perspective(1200px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+  });
+});
+
+// Reset tilt on mouse leave
+document.addEventListener('mouseleave',()=>{
+  cards.forEach(card=>{
+    card.style.transform='perspective(1200px) rotateX(0deg) rotateY(0deg)';
+  });
+});
+
+// ============================================================
+// GYROSCOPE (mobile)
+// ============================================================
+if(window.DeviceOrientationEvent){
+  window.addEventListener('deviceorientation',e=>{
+    if(!e.gamma||!e.beta)return;
+    const gy=(Math.min(Math.max(e.gamma,-15),15))/15; // -1 to 1
+    const gx=(Math.min(Math.max(e.beta,-15),15))/15;
+    cards.forEach(card=>{
+      card.style.transform=`perspective(1200px) rotateX(${gx*5}deg) rotateY(${gy*5}deg)`;
+    });
+  });
+}
+
+// ============================================================
+// SCROLL PARALLAX
+// ============================================================
+const parallaxCards = document.querySelectorAll('[data-parallax]');
+
+function updateParallax(){
+  const ch=window.innerHeight;
+  parallaxCards.forEach(card=>{
+    const rect=card.getBoundingClientRect();
+    const center=rect.top+rect.height/2;
+    const offset=(center-ch/2)/ch; // -1 to 1 based on position relative to viewport center
+    const speed=parseFloat(card.dataset.parallax);
+    card.style.transform=card.style.transform.replace(/translateY\([^)]*\)/,'')+
+      ` translateY(${offset*speed*40}px)`;
+  });
+
+  // Hide scroll hint after scrolling
+  if(window.scrollY>100){
+    document.getElementById('scrollHint').classList.add('faded');
+  }
+}
+
+window.addEventListener('scroll',updateParallax,{passive:true});
+updateParallax();
+</script>
+
+</body>
+</html>
