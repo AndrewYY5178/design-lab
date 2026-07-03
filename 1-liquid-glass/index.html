@@ -12,88 +12,132 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
 :root{
-  --glass-bg:rgba(255,255,255,0.06);
-  --glass-border:rgba(255,255,255,0.1);
-  --glass-highlight:rgba(255,255,255,0.12);
+  --glass-bg:rgba(20,20,28,0.45);
+  --glass-border:rgba(255,255,255,0.07);
   --text:#f0eeea;
   --text-muted:#b0ada6;
 }
 
 body{
-  background:radial-gradient(ellipse at 50% 0%, #12121a 0%, #08080e 70%);
+  background:#08080e;
   color:var(--text);
   font-family:'Crimson Pro','Noto Serif SC',serif;
   -webkit-font-smoothing:antialiased;
   min-height:100vh;
   overflow-x:hidden;
-  cursor:crosshair;
 }
 
-/* ── Noise overlay ── */
+/* ── Background: subtle floating shapes for glass to blur ── */
+.bg-shapes{
+  position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
+}
+.bg-shapes .orb{
+  position:absolute;border-radius:50%;filter:blur(80px);opacity:0.25;
+}
+.bg-shapes .orb:nth-child(1){
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(140,160,220,0.5),transparent);
+  top:-10%;left:-15%;
+}
+.bg-shapes .orb:nth-child(2){
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(180,140,200,0.4),transparent);
+  top:40%;right:-10%;
+}
+.bg-shapes .orb:nth-child(3){
+  width:350px;height:350px;
+  background:radial-gradient(circle,rgba(200,170,140,0.35),transparent);
+  bottom:-5%;left:20%;
+}
+.bg-shapes .orb:nth-child(4){
+  width:250px;height:250px;
+  background:radial-gradient(circle,rgba(140,180,200,0.3),transparent);
+  top:60%;left:50%;
+}
+
+/* ── Noise ── */
 body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.025;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.02;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:128px 128px;
 }
 
 /* ── Page ── */
 .page{
-  max-width:720px;
-  margin:0 auto;
-  padding:80px 24px 120px;
-  position:relative;
-  z-index:1;
+  max-width:720px;margin:0 auto;padding:100px 24px 160px;
+  position:relative;z-index:1;
+  /* 3D perspective for the whole page */
+  perspective:1500px;
+  perspective-origin:50% 30%;
 }
 
-/* ── Glass card base ── */
+/* ── Glass card ── */
 .glass{
   position:relative;
   background:var(--glass-bg);
-  backdrop-filter:blur(28px) saturate(1.8);
-  -webkit-backdrop-filter:blur(28px) saturate(1.8);
-  border:1px solid var(--glass-border);
+  backdrop-filter:blur(20px) saturate(2);
+  -webkit-backdrop-filter:blur(20px) saturate(2);
   border-radius:20px;
   padding:40px 44px;
-  margin-bottom:32px;
+  margin-bottom:36px;
   overflow:hidden;
-  transition:transform 0.15s ease-out, box-shadow 0.3s ease;
 
-  /* 3D tilt setup */
+  /* Depth layers */
+  border-top:1px solid rgba(255,255,255,0.14);
+  border-left:1px solid rgba(255,255,255,0.08);
+  border-right:1px solid rgba(255,255,255,0.05);
+  border-bottom:1px solid rgba(255,255,255,0.03);
+
+  /* Dynamic shadow — deep and moves with tilt */
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.5),
+    0 2px 8px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+
+  /* Smooth transition for shadow/transform */
+  transition: box-shadow 0.4s ease;
+
+  /* 3D */
   transform-style:preserve-3d;
-  perspective:1000px;
 }
 
-/* ── Mouse highlight layer ── */
+/* ── Specular highlight — bright diagonal stripe ── */
 .glass::before{
   content:'';
-  position:absolute;inset:0;pointer-events:none;z-index:2;
-  border-radius:20px;
-  opacity:0;
-  transition:opacity 0.2s ease;
-  background:radial-gradient(circle 200px at var(--mx,50%) var(--my,50%), var(--glass-highlight) 0%, transparent 100%);
+  position:absolute;z-index:2;pointer-events:none;
+  inset:0;border-radius:20px;
+  opacity:0.5;
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,0.18) 0%,
+    rgba(255,255,255,0.06) 20%,
+    transparent 45%,
+    transparent 55%,
+    rgba(0,0,0,0.04) 80%,
+    rgba(0,0,0,0.1) 100%
+  );
 }
-.glass:hover::before{opacity:1;}
 
-/* ── Edge glow on hover ── */
+/* ── Mouse highlight spot ── */
 .glass::after{
   content:'';
-  position:absolute;inset:-1px;pointer-events:none;z-index:1;
-  border-radius:20px;
+  position:absolute;z-index:3;pointer-events:none;
+  inset:0;border-radius:20px;
   opacity:0;
-  transition:opacity 0.4s ease;
-  background:radial-gradient(circle 300px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06) 0%, transparent 100%);
+  transition:opacity 0.3s ease;
+  background:radial-gradient(circle 180px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.15) 0%, transparent 100%);
 }
 .glass:hover::after{opacity:1;}
 
-/* ── Inner content layer ── */
-.glass > *{position:relative;z-index:3;}
+/* ── Inner content ── */
+.glass > *{position:relative;z-index:4;}
 
-/* ── Hero card ── */
-.glass.hero{text-align:center;padding:64px 44px;}
+/* ── Hero ── */
+.glass.hero{text-align:center;padding:72px 44px;}
 .glass.hero h1{
-  font-family:'Playfair Display',serif;font-size:clamp(44px,8vw,80px);
-  font-weight:900;letter-spacing:0.14em;color:var(--text);line-height:1.1;
-  text-shadow:0 0 80px rgba(200,200,230,0.2);
+  font-family:'Playfair Display',serif;font-size:clamp(44px,8vw,84px);
+  font-weight:900;letter-spacing:0.15em;line-height:1.1;
+  text-shadow:0 0 100px rgba(200,200,240,0.25);
 }
 .glass.hero .tagline{
   font-family:'Playfair Display',serif;font-style:italic;
@@ -101,7 +145,7 @@ body::after{
   margin-top:16px;letter-spacing:0.06em;
 }
 
-/* ── Content card ── */
+/* ── Content ── */
 .glass.content .en{
   font-family:'Playfair Display',serif;
   font-size:clamp(17px,2.5vw,22px);line-height:1.7;letter-spacing:0.02em;
@@ -112,97 +156,83 @@ body::after{
   color:var(--text-muted);margin-top:14px;
 }
 
-/* ── Pull quote card ── */
-.glass.pull{text-align:center;padding:48px 36px;}
+/* ── Pull quote ── */
+.glass.pull{text-align:center;padding:52px 36px;}
 .glass.pull p{
   font-family:'Playfair Display',serif;font-style:italic;
   font-size:clamp(19px,3vw,27px);line-height:1.6;letter-spacing:0.03em;
-  text-shadow:0 0 40px rgba(200,200,240,0.1);
+  text-shadow:0 0 50px rgba(200,200,240,0.12);
 }
 
-/* ── Symbols card ── */
-.glass.symbols{display:flex;gap:40px;text-align:center;padding:48px 44px;}
+/* ── Symbols ── */
+.glass.symbols{display:flex;gap:40px;text-align:center;padding:52px 44px;}
 .glass.symbols .col{flex:1;}
 .glass.symbols .big{
   font-family:'Playfair Display',serif;
   font-size:clamp(40px,6vw,60px);font-weight:900;line-height:1;
   text-shadow:0 0 60px rgba(200,200,230,0.15);
 }
-.glass.symbols .sub{
-  font-size:14px;color:var(--text-muted);margin-top:10px;
-  font-style:italic;letter-spacing:0.04em;
-}
-.glass.symbols .desc{
-  font-size:13px;color:var(--text-muted);margin-top:8px;line-height:1.6;
-}
-.glass.symbols .divider{
-  width:1px;background:rgba(255,255,255,0.1);flex-shrink:0;
-}
+.glass.symbols .sub{font-size:14px;color:var(--text-muted);margin-top:10px;font-style:italic;letter-spacing:0.04em;}
+.glass.symbols .desc{font-size:13px;color:var(--text-muted);margin-top:8px;line-height:1.6;}
+.glass.symbols .divider{width:1px;background:rgba(255,255,255,0.1);flex-shrink:0;}
 
+/* ── Closing ── */
+.glass.closing{text-align:center;padding:52px 36px;}
+.glass.closing .en-close{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(16px,2vw,19px);letter-spacing:0.04em;}
+.glass.closing .zh-close{font-family:'Noto Serif SC',serif;font-size:clamp(19px,2.5vw,25px);letter-spacing:0.12em;margin-top:12px;}
+
+/* ── Flourish ── */
+.glass.flourish{display:flex;align-items:center;justify-content:center;gap:16px;padding:28px 44px;}
+.glass.flourish .line{width:50px;height:1px;background:rgba(255,255,255,0.15);}
+.glass.flourish .diamond{width:7px;height:7px;background:rgba(255,255,255,0.2);transform:rotate(45deg);}
+
+/* ── Responsive ── */
 @media(max-width:540px){
-  .glass.symbols{flex-direction:column;gap:24px;}
+  .glass.symbols{flex-direction:column;gap:28px;}
   .glass.symbols .divider{width:100%;height:1px;}
-}
-
-/* ── Closing card ── */
-.glass.closing{text-align:center;padding:48px 36px;}
-.glass.closing .en-close{
-  font-family:'Playfair Display',serif;font-style:italic;
-  font-size:clamp(16px,2vw,19px);letter-spacing:0.04em;
-}
-.glass.closing .zh-close{
-  font-family:'Noto Serif SC',serif;
-  font-size:clamp(19px,2.5vw,25px);letter-spacing:0.12em;margin-top:12px;
-}
-
-/* ── Flourish card ── */
-.glass.flourish{
-  display:flex;align-items:center;justify-content:center;
-  gap:18px;padding:24px 44px;
-}
-.glass.flourish .line{width:56px;height:1px;background:rgba(255,255,255,0.15);}
-.glass.flourish .diamond{
-  width:7px;height:7px;background:rgba(255,255,255,0.2);transform:rotate(45deg);
+  .page{padding:60px 16px 100px;}
 }
 
 /* ── Scroll hint ── */
 .scroll-hint{
   position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  pointer-events:none;opacity:0.4;transition:opacity 0.6s ease;
+  display:flex;flex-direction:column;align-items:center;pointer-events:none;
+  opacity:0.3;transition:opacity 0.6s ease;
 }
-.scroll-hint.faded{opacity:0.08;}
+.scroll-hint.faded{opacity:0.05;}
 .scroll-hint .arrow{
-  width:20px;height:20px;border-right:1px solid rgba(255,255,255,0.4);
-  border-bottom:1px solid rgba(255,255,255,0.4);transform:rotate(45deg);
+  width:20px;height:20px;border-right:1px solid rgba(255,255,255,0.5);
+  border-bottom:1px solid rgba(255,255,255,0.5);transform:rotate(45deg);
 }
 
-/* ── Reduced motion ── */
 @media(prefers-reduced-motion:reduce){
   .glass{transition:none!important;}
-  .glass::before,.glass::after{display:none;}
+  .glass::after{display:none;}
 }
 </style>
 </head>
 <body>
 
+<!-- Background shapes for glass to blur -->
+<div class="bg-shapes">
+  <div class="orb"></div><div class="orb"></div>
+  <div class="orb"></div><div class="orb"></div>
+</div>
+
 <div class="page">
 
-  <!-- 1. Hero -->
-  <div class="glass hero" data-parallax="0.03">
+  <div class="glass hero" data-parallax="0.06">
     <h1>ANDREAM</h1>
     <p class="tagline">The Dream That Continues</p>
   </div>
 
-  <!-- 2. Flourish -->
-  <div class="glass flourish" data-parallax="0.02" aria-hidden="true">
+  <div class="glass flourish" data-parallax="0.04" aria-hidden="true">
     <span class="line"></span><span class="diamond"></span>
     <span class="diamond" style="width:4px;height:4px;"></span>
     <span class="diamond"></span><span class="line"></span>
   </div>
 
-  <!-- 3. Block 1: Origin -->
-  <div class="glass content" data-parallax="0.025">
+  <div class="glass content" data-parallax="0.05">
     <p class="en">
       <strong>AndDream</strong> is a name born from <em>Andrew</em>, yet it reaches far beyond.
       It begins with <strong>&ldquo;And&rdquo;</strong>&thinsp;&mdash;&thinsp;the very first sound of my name,
@@ -215,13 +245,11 @@ body::after{
     </p>
   </div>
 
-  <!-- 4. Pull quote 1 -->
-  <div class="glass pull" data-parallax="0.02">
+  <div class="glass pull" data-parallax="0.04">
     <p>&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p>
   </div>
 
-  <!-- 5. Block 2: "And... Dream" -->
-  <div class="glass content" data-parallax="0.025">
+  <div class="glass content" data-parallax="0.05">
     <p class="en">
       So <strong>AndDream</strong> is not just &ldquo;Andrew&rsquo;s Dream.&rdquo;
       It is also <strong>&ldquo;And&hellip; Dream.&rdquo;</strong>
@@ -233,8 +261,7 @@ body::after{
     </p>
   </div>
 
-  <!-- 6. Symbol cards -->
-  <div class="glass symbols" data-parallax="0.03">
+  <div class="glass symbols" data-parallax="0.06">
     <div class="col">
       <div class="big">And</div>
       <div class="sub">Connection &amp; Continuation</div>
@@ -248,8 +275,7 @@ body::after{
     </div>
   </div>
 
-  <!-- 7. Block 3: Philosophy -->
-  <div class="glass content" data-parallax="0.02">
+  <div class="glass content" data-parallax="0.04">
     <p class="en" style="font-style:italic">
       Every ending is followed by an &ldquo;And.&rdquo;<br>
       Every dream leads to another dream.
@@ -260,17 +286,11 @@ body::after{
     </p>
   </div>
 
-  <!-- 8. Pull quote 2 -->
-  <div class="glass pull" data-parallax="0.02">
-    <p>
-      A space where ideas become melodies,<br>
-      emotions become expressions,<br>
-      and dreams become reality.
-    </p>
+  <div class="glass pull" data-parallax="0.04">
+    <p>A space where ideas become melodies,<br>emotions become expressions,<br>and dreams become reality.</p>
   </div>
 
-  <!-- 9. Block 4: Bridge -->
-  <div class="glass content" data-parallax="0.025">
+  <div class="glass content" data-parallax="0.05">
     <p class="en">
       <strong>AndDream</strong> is a bridge between reality and imagination.
       It belongs to Andrew, yet it does not belong to Andrew alone.
@@ -283,93 +303,98 @@ body::after{
     </p>
   </div>
 
-  <!-- 10. Closing -->
-  <div class="glass closing" data-parallax="0.03">
-    <p class="en-close">
-      AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>
-      and every dream begins with an &ldquo;And.&rdquo;
-    </p>
+  <div class="glass closing" data-parallax="0.06">
+    <p class="en-close">AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>and every dream begins with an &ldquo;And.&rdquo;</p>
     <p class="zh-close">与梦同行，永不止息。</p>
   </div>
 
 </div>
 
-<!-- Scroll hint -->
-<div class="scroll-hint" id="scrollHint">
-  <div class="arrow"></div>
-</div>
+<div class="scroll-hint" id="scrollHint"><div class="arrow"></div></div>
 
 <script>
 // ============================================================
-// MOUSE HIGHLIGHT + 3D TILT
+// COMBINED TILT + PARALLAX + HIGHLIGHT
 // ============================================================
 const cards = document.querySelectorAll('.glass');
+const parallaxItems = document.querySelectorAll('[data-parallax]');
 let mx=0.5, my=0.5;
+let gyroX=0, gyroY=0;
+let hasGyro=false;
 
+// Track tilt + parallax separately, combine in one update
+const cardState = new Map();
+cards.forEach(c=>cardState.set(c,{tiltX:0,tiltY:0,parallaxY:0}));
+
+/* ── Mouse tilt + highlight ── */
 document.addEventListener('mousemove',e=>{
   mx=e.clientX/window.innerWidth;
   my=e.clientY/window.innerHeight;
 
   cards.forEach(card=>{
-    const rect=card.getBoundingClientRect();
-    // Local mouse position within card (0–1)
-    const lx=(e.clientX-rect.left)/rect.width;
-    const ly=(e.clientY-rect.top)/rect.height;
+    const r=card.getBoundingClientRect();
+    const lx=(e.clientX-r.left)/r.width;
+    const ly=(e.clientY-r.top)/r.height;
 
-    // Update highlight position
+    // Highlight position
     card.style.setProperty('--mx',`${lx*100}%`);
     card.style.setProperty('--my',`${ly*100}%`);
 
-    // 3D tilt (max ±3°)
-    const tiltX=(ly-0.5)*6;  // -3 to +3
-    const tiltY=(lx-0.5)*-6; // +3 to -3
-    card.style.transform=`perspective(1200px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+    // Tilt: ±10° horizontal, ±8° vertical — dramatic
+    const st=cardState.get(card);
+    if(!hasGyro){
+      st.tiltX=(ly-0.5)*-16; // -8 to +8
+      st.tiltY=(lx-0.5)*20;  // -10 to +10
+    }
+    applyTransform(card);
   });
 });
 
-// Reset tilt on mouse leave
-document.addEventListener('mouseleave',()=>{
-  cards.forEach(card=>{
-    card.style.transform='perspective(1200px) rotateX(0deg) rotateY(0deg)';
-  });
-});
-
-// ============================================================
-// GYROSCOPE (mobile)
-// ============================================================
+/* ── Gyroscope ── */
 if(window.DeviceOrientationEvent){
   window.addEventListener('deviceorientation',e=>{
-    if(!e.gamma||!e.beta)return;
-    const gy=(Math.min(Math.max(e.gamma,-15),15))/15; // -1 to 1
-    const gx=(Math.min(Math.max(e.beta,-15),15))/15;
+    if(e.gamma==null||e.beta==null)return;
+    gyroY=Math.max(-1,Math.min(1,e.gamma/20));
+    gyroX=Math.max(-1,Math.min(1,e.beta/20));
+    hasGyro=true;
     cards.forEach(card=>{
-      card.style.transform=`perspective(1200px) rotateX(${gx*5}deg) rotateY(${gy*5}deg)`;
+      const st=cardState.get(card);
+      st.tiltX=gyroX*10;
+      st.tiltY=gyroY*14;
+      applyTransform(card);
     });
   });
 }
 
-// ============================================================
-// SCROLL PARALLAX
-// ============================================================
-const parallaxCards = document.querySelectorAll('[data-parallax]');
+function applyTransform(card){
+  const st=cardState.get(card);
+  card.style.transform=
+    `perspective(1200px) rotateX(${st.tiltX}deg) rotateY(${st.tiltY}deg) translateY(${st.parallaxY}px)`;
 
-function updateParallax(){
-  const ch=window.innerHeight;
-  parallaxCards.forEach(card=>{
-    const rect=card.getBoundingClientRect();
-    const center=rect.top+rect.height/2;
-    const offset=(center-ch/2)/ch; // -1 to 1 based on position relative to viewport center
-    const speed=parseFloat(card.dataset.parallax);
-    card.style.transform=card.style.transform.replace(/translateY\([^)]*\)/,'')+
-      ` translateY(${offset*speed*40}px)`;
-  });
-
-  // Hide scroll hint after scrolling
-  if(window.scrollY>100){
-    document.getElementById('scrollHint').classList.add('faded');
-  }
+  // Dynamic shadow based on tilt
+  const sx=st.tiltY*1.5;
+  const sy=st.tiltX*1.5;
+  const blur=30+Math.abs(st.tiltX)*2;
+  card.style.boxShadow=
+    `${sx}px ${sy}px ${blur}px rgba(0,0,0,0.5), `+
+    `${sx*0.3}px ${sy*0.3}px 8px rgba(0,0,0,0.3), `+
+    `inset 0 1px 0 rgba(255,255,255,${0.04+Math.abs(st.tiltX)*0.005})`;
 }
 
+/* ── Parallax ── */
+function updateParallax(){
+  const ch=window.innerHeight;
+  parallaxItems.forEach(card=>{
+    const r=card.getBoundingClientRect();
+    const center=r.top+r.height/2;
+    const offset=(center-ch/2)/ch;
+    const speed=parseFloat(card.dataset.parallax);
+    const st=cardState.get(card);
+    st.parallaxY=offset*speed*60;
+    applyTransform(card);
+  });
+  if(window.scrollY>100)document.getElementById('scrollHint').classList.add('faded');
+}
 window.addEventListener('scroll',updateParallax,{passive:true});
 updateParallax();
 </script>
