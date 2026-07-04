@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AndDream — Adaptive Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:rgb(249,227,157);--text:rgb(92,110,66);--muted:rgba(92,110,66,0.6);
+}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Playfair Display','Noto Serif SC',serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  transition:background 0.8s ease,color 0.8s ease;
+}
+
+/* ── Theme switcher ── */
+.theme-bar{
+  position:fixed;top:16px;right:16px;z-index:100;
+  display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;
+}
+.theme-dot{
+  width:28px;height:28px;border-radius:50%;border:2px solid transparent;
+  cursor:pointer;transition:transform 0.2s ease,border-color 0.2s ease;
+  box-shadow:0 1px 4px rgba(0,0,0,0.1);
+}
+.theme-dot:hover{transform:scale(1.2);}
+.theme-dot.active{border-color:rgba(255,255,255,0.8);box-shadow:0 0 0 3px rgba(255,255,255,0.3);}
+
+/* ── Page ── */
+.page{max-width:720px;margin:0 auto;padding:100px 24px 80px;position:relative;z-index:1;}
+
+/* ── Hero ── */
+.hero{text-align:center;margin-bottom:56px;}
+.hero h1{font-size:clamp(40px,8vw,80px);font-weight:900;letter-spacing:0.12em;line-height:1.1;}
+.hero .tag{font-size:clamp(14px,2vw,18px);opacity:0.7;margin-top:12px;font-style:italic;letter-spacing:0.06em;}
+.hero .ctx{font-size:12px;opacity:0.5;margin-top:6px;letter-spacing:0.06em;}
+
+/* ── Divider ── */
+.hr{display:flex;align-items:center;gap:12px;margin:36px 0;opacity:0.2;}
+.hr::before,.hr::after{content:'';flex:1;height:1px;background:currentColor;}
+.hr span{width:6px;height:6px;background:currentColor;border-radius:50%;}
+
+/* ── Block ── */
+.block{margin-bottom:36px;}
+.block .en{font-size:clamp(16px,2.2vw,21px);line-height:1.7;}
+.block .zh{font-size:clamp(14px,1.6vw,16px);line-height:2;opacity:0.7;margin-top:10px;}
+
+/* ── Pull ── */
+.pull{text-align:center;margin:40px 0;padding:28px 0;border-top:1px solid;border-bottom:1px solid;opacity:0.5;}
+.pull p{font-size:clamp(18px,2.5vw,25px);line-height:1.5;font-style:italic;}
+
+/* ── Symbols ── */
+.symbols{display:flex;gap:36px;text-align:center;margin:40px 0;}
+.symbols .col{flex:1;}
+.symbols .big{font-size:clamp(38px,5vw,56px);font-weight:900;line-height:1;}
+.symbols .sub{font-size:13px;opacity:0.6;margin-top:8px;}
+.symbols .divider{width:1px;background:currentColor;opacity:0.15;flex-shrink:0;}
+@media(max-width:540px){.symbols{flex-direction:column;gap:24px;}.symbols .divider{width:100%;height:1px;}}
+
+/* ── Dashboard (returning user) ── */
+.dash{display:flex;flex-direction:column;gap:28px;}
+.dash .card{
+  background:rgba(255,255,255,0.25);border-radius:16px;padding:28px 32px;
+  border:1px solid rgba(255,255,255,0.3);
+}
+.dash .card h3{font-size:clamp(18px,2.5vw,24px);font-weight:700;margin-bottom:4px;}
+.dash .card .status{font-size:13px;opacity:0.6;margin-bottom:14px;}
+.dash .progress-bar{
+  height:8px;background:rgba(255,255,255,0.3);border-radius:4px;overflow:hidden;
+}
+.dash .progress-fill{
+  height:100%;background:var(--text);border-radius:4px;
+  transition:width 0.8s ease;
+  opacity:0.7;
+}
+.dash .pct{font-size:12px;opacity:0.6;margin-top:6px;text-align:right;}
+
+/* ── Closing ── */
+.closing{text-align:center;margin-top:56px;opacity:0.6;}
+.closing .en{font-size:clamp(15px,1.8vw,18px);font-style:italic;}
+.closing .zh{font-size:clamp(17px,2.2vw,22px);letter-spacing:0.08em;margin-top:8px;}
+
+/* ── Toggle ── */
+.user-toggle{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100;
+  font-size:12px;opacity:0.5;cursor:pointer;letter-spacing:0.06em;
+  background:rgba(255,255,255,0.3);padding:6px 16px;border-radius:20px;
+  border:1px solid rgba(255,255,255,0.3);transition:opacity 0.3s ease;
+}
+.user-toggle:hover{opacity:0.8;}
+</style>
+</head>
+<body>
+
+<!-- Theme switcher -->
+<nav class="theme-bar" id="themeBar" aria-label="主题切换"></nav>
+
+<div class="page">
+
+  <header class="hero">
+    <h1>ANDREAM</h1>
+    <p class="tag">The Dream That Continues</p>
+    <p class="ctx" id="context"></p>
+  </header>
+
+  <div class="hr"><span></span></div>
+
+  <!-- New user content -->
+  <div id="newUserContent">
+    <section class="block">
+      <p class="en"><strong>AndDream</strong> is a name born from <em>Andrew</em>, yet it reaches far beyond. It begins with <strong>&ldquo;And&rdquo;</strong> — a word of <em>connection</em>, <em>continuation</em>, and <em>endless possibilities</em>.</p>
+      <p class="zh">AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，但这个词更深的含义是：连接、延续、与无限可能。</p>
+    </section>
+
+    <div class="pull"><p>&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p></div>
+
+    <div class="symbols">
+      <div class="col"><div class="big">And</div><div class="sub">Connection &amp; Continuation</div></div>
+      <div class="divider"></div>
+      <div class="col"><div class="big">Dream</div><div class="sub">Imagination &amp; Creation</div></div>
+    </div>
+
+    <section class="block">
+      <p class="en">So <strong>AndDream</strong> is not just &ldquo;Andrew&rsquo;s Dream.&rdquo; It is also <strong>&ldquo;And&hellip; Dream.&rdquo;</strong> An unfinished sentence. A story still in motion.</p>
+      <p class="zh">所以 AndDream 不只是「Andrew 的梦想」。它也是「And&hellip; Dream」——一个永远未完成的句子，一个仍在继续的故事。</p>
+    </section>
+
+    <footer class="closing">
+      <p class="en">AndDream — where the story never ends,<br>and every dream begins with an &ldquo;And.&rdquo;</p>
+      <p class="zh">与梦同行，永不止息。</p>
+    </footer>
+  </div>
+
+  <!-- Returning user dashboard -->
+  <div id="returningUserContent" style="display:none;">
+    <div class="dash">
+      <div class="card">
+        <h3>IELTS Beach · 雅思沙滩</h3>
+        <p class="status">词汇学习 PWA · 已上线</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:78%;"></div></div>
+        <p class="pct">核心功能 78%</p>
+      </div>
+      <div class="card">
+        <h3>Cloudo · 云端笔记</h3>
+        <p class="status">开发中</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:35%;"></div></div>
+        <p class="pct">整体进度 35%</p>
+      </div>
+      <div class="card">
+        <h3>AndDream Brand</h3>
+        <p class="status">3D 品牌页 / 液态玻璃 / 设计实验室</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:85%;"></div></div>
+        <p class="pct">品牌体系 85%</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Manual user type toggle -->
+<div class="user-toggle" id="userToggle" title="切换新用户/老用户视图">↻ 切换视图</div>
+
+<script>
+// ============================================================
+// THEME CONFIG
+// ============================================================
+const THEMES={
+  'morning-new':  {bg:'rgb(249,227,157)',text:'rgb(92,110,66)',  label:'晨 · 新'},
+  'afternoon-new':{bg:'rgb(161,216,228)',text:'rgb(107,89,83)', label:'午 · 新'},
+  'night-new':    {bg:'rgb(111,75,110)', text:'rgb(243,208,198)',label:'夜 · 新'},
+  'morning-ret':  {bg:'rgb(172,228,219)',text:'rgb(93,148,62)', label:'晨 · 熟'},
+  'afternoon-ret':{bg:'rgb(167,88,121)', text:'rgb(231,178,191)',label:'午 · 熟'},
+  'night-ret':    {bg:'rgb(61,79,116)',  text:'rgb(240,240,205)',label:'夜 · 熟'},
+};
+
+// ============================================================
+// DETECT
+// ============================================================
+function detectTimeSlot(){
+  const h=new Date().getHours();
+  if(h>=6&&h<12)return'morning';
+  if(h>=12&&h<18)return'afternoon';
+  return'night';
+}
+
+function detectUserType(){
+  let visits=parseInt(localStorage.getItem('anddream_visits')||'0');
+  visits++;
+  localStorage.setItem('anddream_visits',visits);
+  return visits<=1?'new':'ret';
+}
+
+function getAutoTheme(){
+  const t=detectTimeSlot();
+  const u=detectUserType();
+  return `${t}-${u}`;
+}
+
+// ============================================================
+// APPLY
+// ============================================================
+let currentTheme=localStorage.getItem('anddream_theme')||getAutoTheme();
+let userOverride=localStorage.getItem('anddream_user_override')||null; // null=auto, 'new'/'ret'
+
+if(!THEMES[currentTheme])currentTheme='morning-new';
+
+function applyTheme(key){
+  currentTheme=key;
+  const t=THEMES[key];
+  document.documentElement.style.setProperty('--bg',t.bg);
+  document.documentElement.style.setProperty('--text',t.text);
+  document.documentElement.style.setProperty('--muted',t.text.replace(')',',0.6)').replace('rgb','rgba'));
+  localStorage.setItem('anddream_theme',key);
+
+  // Update active dot
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active',d.dataset.key===key));
+
+  // Update context label
+  const uType=key.includes('ret')?'老访客':'新访客';
+  const tLabel=key.startsWith('morning')?'早晨':key.startsWith('afternoon')?'下午':'夜间';
+  document.getElementById('context').textContent=`${tLabel} · ${uType} · ${THEMES[key].label.split('·')[1].trim()}`;
+}
+
+// ============================================================
+// BUILD THEME SWITCHER
+// ============================================================
+const themeBar=document.getElementById('themeBar');
+Object.entries(THEMES).forEach(([key,t])=>{
+  const dot=document.createElement('div');
+  dot.className='theme-dot';
+  dot.dataset.key=key;
+  dot.style.background=t.bg;
+  dot.title=t.label;
+  dot.addEventListener('click',()=>{applyTheme(key);});
+  themeBar.appendChild(dot);
+});
+
+// ============================================================
+// USER TYPE OVERRIDE
+// ============================================================
+function updateContent(){
+  const isRet=userOverride?userOverride==='ret':currentTheme.includes('ret');
+  document.getElementById('newUserContent').style.display=isRet?'none':'block';
+  document.getElementById('returningUserContent').style.display=isRet?'block':'none';
+}
+
+document.getElementById('userToggle').addEventListener('click',()=>{
+  if(!userOverride||userOverride==='new')userOverride='ret';
+  else userOverride='new';
+  localStorage.setItem('anddream_user_override',userOverride);
+
+  // Recompute theme with override
+  const t=detectTimeSlot();
+  const newKey=`${t}-${userOverride}`;
+  applyTheme(newKey);
+  updateContent();
+});
+
+// ============================================================
+// INIT
+// ============================================================
+applyTheme(currentTheme);
+updateContent();
+
+// If user override is set, re-apply correct theme on load
+if(userOverride){
+  const t=detectTimeSlot();
+  applyTheme(`${t}-${userOverride}`);
+}
+</script>
+
+</body>
+</html>
