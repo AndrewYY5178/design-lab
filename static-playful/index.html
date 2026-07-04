@@ -25,10 +25,10 @@ body{
 /* ── Theme button ── */
 .theme-btn{
   position:fixed;top:20px;right:20px;z-index:100;
-  width:44px;height:44px;border-radius:50%;
+  width:auto;height:auto;padding:10px 16px;border-radius:24px;
   border:2px solid;border-color:inherit;
   background:var(--bg);color:inherit;
-  font-size:20px;cursor:pointer;
+  font-size:12px;font-weight:900;letter-spacing:0.12em;cursor:pointer;
   transition:transform 0.3s ease,box-shadow 0.3s ease;
   display:flex;align-items:center;justify-content:center;
 }
@@ -79,7 +79,7 @@ body{
 </head>
 <body>
 
-<button class="theme-btn" id="themeBtn" title="换个配色" aria-label="切换配色">🎨</button>
+<button class="theme-btn" id="themeBtn" title="换个配色" aria-label="切换配色">THEME</button>
 
 <div class="page">
 
@@ -127,7 +127,7 @@ body{
 
 </div>
 
-<div class="hint" id="hint">🎨 按一下试试</div>
+<div class="hint" id="hint">Try pressing the button —</div>
 
 <script>
 const THEMES=[
@@ -151,7 +151,7 @@ function apply(i){
 
 document.getElementById('themeBtn').addEventListener('click',()=>{
   apply(idx+1);
-  hint.textContent=['✨ 不错吧？','🌸 再换一个？','🌊 还有哦','🌟 最后一击！'][idx]||'🎨 无限循环~';
+  hint.textContent=['Nice one!','Try again?','Another!','One more...'][idx]||'Keep going —';
 });
 
 apply(idx);
