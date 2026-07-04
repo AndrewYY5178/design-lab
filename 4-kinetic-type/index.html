@@ -6,89 +6,68 @@
 <title>AndDream — Kinetic Type</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,WONK,SOFT@1,9..144,100..900,0..1,0..100&family=Roboto+Flex:opsz,wght,wdth,slnt@8..144,100..1000,25..151,0..-10&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
 
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-
-:root{
-  --text:#1a1a1a;
-  --muted:#666;
-}
-
+:root{--text:#1a1a1a;--muted:#666;}
 body{
-  background:#faf8f5;
-  color:var(--text);
-  font-family:'Roboto Flex','Noto Serif SC',sans-serif;
-  -webkit-font-smoothing:antialiased;
-  min-height:100vh;
+  background:#faf8f5;color:var(--text);
+  font-family:'Source Serif 4','Noto Serif SC',serif;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
   cursor:crosshair;
 }
+.page{max-width:720px;margin:0 auto;padding:120px 24px 180px;position:relative;z-index:1;}
 
-/* ── Page ── */
-.page{
-  max-width:720px;margin:0 auto;padding:120px 24px 180px;
-  position:relative;z-index:1;
+/* ── All text elements have smooth transitions ── */
+.kinetic{
+  transition:font-weight 0.5s cubic-bezier(0.25,0.1,0.25,1),
+             font-style 0.5s cubic-bezier(0.25,0.1,0.25,1);
 }
 
 /* ── Divider ── */
-.divider{
-  display:flex;align-items:center;gap:14px;margin:36px 0;
-  opacity:0.2;
-}
+.divider{display:flex;align-items:center;gap:14px;margin:36px 0;opacity:0.2;}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--text);}
 .divider .dot{width:5px;height:5px;background:var(--text);border-radius:50%;}
 
 /* ── Hero ── */
 .hero{text-align:center;margin-bottom:48px;}
 .hero h1{
-  font-family:'Fraunces',serif;font-size:clamp(56px,10vw,110px);
-  font-weight:700;line-height:1;letter-spacing:-0.02em;
+  font-weight:700;font-size:clamp(56px,10vw,110px);
+  line-height:1;letter-spacing:-0.02em;
 }
 .hero .tagline{
   font-size:clamp(16px,2.5vw,22px);color:var(--muted);
   margin-top:16px;letter-spacing:0.04em;font-style:italic;
 }
 
-/* ── Content block ── */
+/* ── Content ── */
 .block{margin-bottom:40px;}
-.block .en{
-  font-size:clamp(17px,2.2vw,22px);line-height:1.7;letter-spacing:0.01em;
-}
+.block .en{font-size:clamp(17px,2.2vw,22px);line-height:1.7;letter-spacing:0.01em;}
 .block .zh{
-  font-size:clamp(14px,1.6vw,17px);line-height:2;color:var(--muted);
-  margin-top:12px;font-family:'Noto Serif SC',serif;
+  font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.6vw,17px);
+  line-height:2;color:var(--muted);margin-top:12px;
 }
 
-/* ── Pull quote ── */
+/* ── Pull ── */
 .pull{
   text-align:center;margin:48px 0;padding:32px 0;
   border-top:1px solid rgba(0,0,0,0.08);
   border-bottom:1px solid rgba(0,0,0,0.08);
 }
-.pull p{
-  font-size:clamp(20px,3vw,30px);line-height:1.5;letter-spacing:-0.01em;
-  font-style:italic;
-}
+.pull p{font-size:clamp(20px,3vw,30px);line-height:1.5;}
 
 /* ── Symbols ── */
 .symbols{display:flex;gap:40px;text-align:center;margin:48px 0;}
 .symbols .col{flex:1;}
-.symbols .big{
-  font-family:'Fraunces',serif;
-  font-size:clamp(42px,6vw,68px);font-weight:800;line-height:1;
-}
+.symbols .big{font-weight:800;font-size:clamp(42px,6vw,68px);line-height:1;}
 .symbols .sub{font-size:14px;color:var(--muted);margin-top:8px;font-style:italic;}
 .symbols .desc{font-size:13px;color:#999;margin-top:6px;line-height:1.5;}
 .symbols .divider{width:1px;background:rgba(0,0,0,0.1);flex-shrink:0;}
-@media(max-width:540px){
-  .symbols{flex-direction:column;gap:28px;}
-  .symbols .divider{width:100%;height:1px;}
-}
 
 /* ── Closing ── */
 .closing{text-align:center;margin-top:72px;padding-top:40px;border-top:1px solid rgba(0,0,0,0.08);}
-.closing .en{font-size:clamp(17px,2vw,21px);font-style:italic;}
+.closing .en{font-size:clamp(17px,2vw,21px);}
 .closing .zh{
   font-family:'Noto Serif SC',serif;
   font-size:clamp(19px,2.5vw,26px);letter-spacing:0.1em;margin-top:10px;
@@ -96,17 +75,16 @@ body{
 
 /* ── HUD ── */
 .hud{
-  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  z-index:10;pointer-events:none;
-  font-family:'Roboto Flex',sans-serif;font-size:13px;color:#333;
-  letter-spacing:0.04em;text-align:center;line-height:2;
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;
+  pointer-events:none;font-size:13px;color:#555;
   background:rgba(255,255,255,0.8);padding:8px 18px;border-radius:20px;
-  box-shadow:0 1px 8px rgba(0,0,0,0.06);
+  box-shadow:0 1px 8px rgba(0,0,0,0.06);text-align:center;line-height:2;
 }
 .hud b{font-weight:700;margin:0 2px 0 10px;}
 
-/* ── Responsive ── */
 @media(max-width:540px){
+  .symbols{flex-direction:column;gap:28px;}
+  .symbols .divider{width:100%;height:1px;}
   .page{padding:80px 16px 120px;}
 }
 </style>
@@ -115,17 +93,15 @@ body{
 
 <div class="page">
 
-  <!-- ── Hero ── -->
-  <header class="hero kinetic" data-type="hero">
-    <h1 class="kinetic-title">ANDREAM</h1>
-    <p class="tagline kinetic" data-type="body">The Dream That Continues</p>
+  <header class="hero">
+    <h1 class="kinetic" id="heroTitle">ANDREAM</h1>
+    <p class="tagline kinetic" id="heroTag">The Dream That Continues</p>
   </header>
 
   <div class="divider"><span class="dot"></span></div>
 
-  <!-- ── Origin ── -->
-  <section class="block kinetic" data-type="body">
-    <p class="en">
+  <section class="block">
+    <p class="en kinetic" data-k="body">
       <strong>AndDream</strong> is a name born from <em>Andrew</em>, yet it reaches far beyond.
       It begins with <strong>&ldquo;And&rdquo;</strong>&thinsp;&mdash;&thinsp;the very first sound of my name,
       yet it also carries a deeper meaning: a word of <em>connection</em>,
@@ -134,14 +110,12 @@ body{
     <p class="zh">AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，但这个词更深的含义是：连接、延续、与无限可能。</p>
   </section>
 
-  <!-- ── Pull 1 ── -->
-  <div class="pull kinetic" data-type="pull">
-    <p>&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p>
+  <div class="pull">
+    <p class="kinetic" data-k="pull">&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p>
   </div>
 
-  <!-- ── Block 2 ── -->
-  <section class="block kinetic" data-type="body">
-    <p class="en">
+  <section class="block">
+    <p class="en kinetic" data-k="body">
       So <strong>AndDream</strong> is not just &ldquo;Andrew&rsquo;s Dream.&rdquo;
       It is also <strong>&ldquo;And&hellip; Dream.&rdquo;</strong>
       An unfinished sentence. A story still in motion.
@@ -149,37 +123,25 @@ body{
     <p class="zh">所以 AndDream 不只是「Andrew 的梦想」。它也是「And&hellip; Dream」——一个永远未完成的句子，一个仍在继续的故事。</p>
   </section>
 
-  <!-- ── Symbols ── -->
-  <div class="symbols kinetic" data-type="symbols">
-    <div class="col">
-      <div class="big kinetic" data-type="hero">And</div>
-      <div class="sub">Connection &amp; Continuation</div>
-      <div class="desc">连接、以及、还有未来。<br>每一个终点之后，都有新的开始。</div>
-    </div>
+  <div class="symbols">
+    <div class="col"><div class="big kinetic" data-k="hero">And</div><div class="sub">Connection &amp; Continuation</div><div class="desc">连接、以及、还有未来。<br>每一个终点之后，都有新的开始。</div></div>
     <div class="divider"></div>
-    <div class="col">
-      <div class="big kinetic" data-type="hero">Dream</div>
-      <div class="sub">Imagination &amp; Creation</div>
-      <div class="desc">在艺术与音乐中，<br>梦想是想象力、情感与内心宇宙。</div>
-    </div>
+    <div class="col"><div class="big kinetic" data-k="hero">Dream</div><div class="sub">Imagination &amp; Creation</div><div class="desc">在艺术与音乐中，<br>梦想是想象力、情感与内心宇宙。</div></div>
   </div>
 
-  <!-- ── Pull 2 ── -->
-  <section class="block kinetic" data-type="body">
-    <p class="en" style="font-style:italic">
-      Every ending is followed by an &ldquo;And.&rdquo;<br>
-      Every dream leads to another dream.
+  <section class="block">
+    <p class="en kinetic" data-k="body" style="font-style:italic">
+      Every ending is followed by an &ldquo;And.&rdquo;<br>Every dream leads to another dream.
     </p>
     <p class="zh">每一个终点之后，都还有新的开始；<br>每一个梦想实现之后，都孕育着下一个梦想。</p>
   </section>
 
-  <div class="pull kinetic" data-type="pull">
-    <p>A space where ideas become melodies,<br>emotions become expressions,<br>and dreams become reality.</p>
+  <div class="pull">
+    <p class="kinetic" data-k="pull">A space where ideas become melodies,<br>emotions become expressions,<br>and dreams become reality.</p>
   </div>
 
-  <!-- ── Bridge ── -->
-  <section class="block kinetic" data-type="body">
-    <p class="en">
+  <section class="block">
+    <p class="en kinetic" data-k="body">
       <strong>AndDream</strong> is a bridge between reality and imagination.
       It belongs to Andrew, yet it does not belong to Andrew alone.
       It is a journey&thinsp;&mdash;&thinsp;of creation, of growth,
@@ -188,83 +150,49 @@ body{
     <p class="zh">AndDream 是一个连接现实与梦境的空间。它属于 Andrew，也不只属于 Andrew。这是一段创造、成长、与无限可能的旅程。</p>
   </section>
 
-  <!-- ── Closing ── -->
-  <footer class="closing kinetic" data-type="body">
-    <p class="en">AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>and every dream begins with an &ldquo;And.&rdquo;</p>
+  <footer class="closing">
+    <p class="en kinetic" data-k="body">AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>and every dream begins with an &ldquo;And.&rdquo;</p>
     <p class="zh">与梦同行，永不止息。</p>
   </footer>
 
 </div>
 
 <div class="hud" id="hud">
-  mouse → weight + slant &nbsp;|&nbsp; scroll → width + size &nbsp;|&nbsp; time → breathe
+  <b>weight:</b>700 &nbsp;|&nbsp; move mouse ↔ &nbsp;|&nbsp; scroll ↕
 </div>
 
 <script>
-// ============================================================
-// KINETIC TYPOGRAPHY ENGINE — dramatic ranges
-// ============================================================
+let mx=0.5, scrollP=0;
 
-let mx=0.5, my=0.5, scrollP=0;
-
-document.addEventListener('mousemove',e=>{
-  mx=e.clientX/window.innerWidth;
-  my=1-e.clientY/window.innerHeight;
-});
-
+document.addEventListener('mousemove',e=>{mx=e.clientX/window.innerWidth;});
 function updateScroll(){
   const max=document.body.scrollHeight-window.innerHeight;
   scrollP=max>0?window.scrollY/max:0;
 }
-window.addEventListener('scroll',updateScroll,{passive:true});
-updateScroll();
+window.addEventListener('scroll',updateScroll,{passive:true});updateScroll();
 
-const heroEls=document.querySelectorAll('[data-type="hero"]');
-const bodyEls=document.querySelectorAll('[data-type="body"]');
-const pullEls=document.querySelectorAll('[data-type="pull"]');
+const heroEls=document.querySelectorAll('[data-k="hero"]');
+const bodyEls=document.querySelectorAll('[data-k="body"]');
+const pullEls=document.querySelectorAll('[data-k="pull"]');
 
-function animate(time){
+function animate(){
   requestAnimationFrame(animate);
-  const t=time*0.001;
-  const breathe=Math.sin(t*0.4)*0.06;
 
-  // Hero: Fraunces — use native fontWeight + fontStyle
-  const hWght=100+mx*800;
-  heroEls.forEach(el=>{
-    el.style.fontWeight=hWght;
-    el.style.fontVariationSettings=`'opsz' ${9+my*135}, 'SOFT' ${my*80}, 'WONK' ${breathe*2}`;
-  });
+  // Smooth gradient: mouse X drives weight from 200↔900
+  const w=200+mx*700;
+  heroEls.forEach(el=>el.style.fontWeight=Math.round(w));
+  bodyEls.forEach(el=>{el.style.fontWeight=Math.round(w);el.style.fontStyle=scrollP>0.5?'italic':'normal';});
+  pullEls.forEach(el=>{el.style.fontWeight=Math.round(300+mx*600));});
 
-  // Body: Roboto Flex — use native fontWeight, fontStretch, fontStyle:oblique
-  const bWght=100+mx*800;
-  const bStretch=Math.round(60+scrollP*80);
-  const bSlnt=-(mx*10);
-  bodyEls.forEach(el=>{
-    el.style.fontWeight=bWght;
-    el.style.fontStretch=`${bStretch}%`;
-    el.style.fontStyle=`oblique ${bSlnt}deg`;
-  });
-
-  // Pull quotes
-  pullEls.forEach(el=>{
-    el.style.fontWeight=100+mx*800;
-    el.style.fontStretch=`${Math.round(60+scrollP*80)}%`;
-    el.style.fontStyle=`oblique ${-(mx*10)}deg`;
-  });
-
-  // HUD
-  document.getElementById('hud').innerHTML=
-    `<b>wght:</b>${Math.round(bWght)} <b>wdth:</b>${Math.round(bStretch)}% <b>slnt:</b>${Math.round(bSlnt)}&deg; &nbsp;|&nbsp; mx:${mx.toFixed(2)} scroll:${scrollP.toFixed(2)}`;
+  document.getElementById('hud').innerHTML=`<b>weight:</b>${Math.round(w)} &nbsp;|&nbsp; move mouse ↔ for weight &nbsp;|&nbsp; scroll ↕ for style`;
 }
 
-// Wait for fonts to load before starting
 async function start(){
   try{await document.fonts.ready;}catch(e){}
   document.body.style.opacity='1';
   requestAnimationFrame(animate);
 }
-document.body.style.opacity='0.3';
-document.body.style.transition='opacity 0.5s ease';
+document.body.style.opacity='0.3';document.body.style.transition='opacity 0.5s ease';
 start();
 </script>
 
