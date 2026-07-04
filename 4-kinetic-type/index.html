@@ -99,10 +99,13 @@ body{
 /* ── HUD ── */
 .hud{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  z-index:10;pointer-events:none;opacity:0.35;
-  font-family:'Roboto Flex',sans-serif;font-size:11px;color:var(--muted);
-  letter-spacing:0.08em;text-align:center;line-height:1.8;
+  z-index:10;pointer-events:none;
+  font-family:'Roboto Flex',sans-serif;font-size:13px;color:#333;
+  letter-spacing:0.04em;text-align:center;line-height:2;
+  background:rgba(255,255,255,0.8);padding:8px 18px;border-radius:20px;
+  box-shadow:0 1px 8px rgba(0,0,0,0.06);
 }
+.hud b{font-weight:700;margin:0 2px 0 10px;}
 
 /* ── Responsive ── */
 @media(max-width:540px){
@@ -201,26 +204,23 @@ body{
 
 <script>
 // ============================================================
-// KINETIC TYPOGRAPHY ENGINE
+// KINETIC TYPOGRAPHY ENGINE — dramatic ranges
 // ============================================================
 
 let mx=0.5, my=0.5, scrollP=0;
 
-/* ── Input tracking ── */
 document.addEventListener('mousemove',e=>{
   mx=e.clientX/window.innerWidth;
-  my=1-e.clientY/window.innerHeight; // invert: top=0, bottom=1
+  my=1-e.clientY/window.innerHeight;
 });
 
 function updateScroll(){
-  const st=window.scrollY;
   const max=document.body.scrollHeight-window.innerHeight;
-  scrollP=max>0?st/max:0;
+  scrollP=max>0?window.scrollY/max:0;
 }
 window.addEventListener('scroll',updateScroll,{passive:true});
 updateScroll();
 
-/* ── Apply variations ── */
 const heroEls=document.querySelectorAll('[data-type="hero"]');
 const bodyEls=document.querySelectorAll('[data-type="body"]');
 const pullEls=document.querySelectorAll('[data-type="pull"]');
@@ -228,41 +228,49 @@ const pullEls=document.querySelectorAll('[data-type="pull"]');
 function animate(time){
   requestAnimationFrame(animate);
   const t=time*0.001;
-  const breathe=Math.sin(t*0.5)*0.05; // subtle ±5% oscillation
+  const breathe=Math.sin(t*0.4)*0.06;
 
-  // ── Hero: mouse X→weight, mouse Y→optical size, time→breathe ──
-  const hWght=200+mx*700; // 200→900
-  const hOpsz=12+my*100; // 12→112
-  const hSoft=30+my*50;
-  const hWonk=0.3+breathe;
+  // Hero: extreme range — wght 100↔900, opsz 9↔144
+  const hWght=100+mx*800;
+  const hOpsz=9+my*135;
+  const hSoft=my*80;
+  const hWonk=breathe*2;
   heroEls.forEach(el=>{
     el.style.fontVariationSettings=`'wght' ${hWght}, 'opsz' ${hOpsz}, 'SOFT' ${hSoft}, 'WONK' ${hWonk}`;
   });
 
-  // ── Body: mouse X→weight+slant, scroll→width+opsz ──
-  const bWght=200+mx*500; // 200→700
-  const bSlnt=-(mx*8); // 0→-8
-  const bWdth=75+scrollP*50; // 75→125
-  const bOpsz=10+scrollP*30;
+  // Body: wght 100↔900, wdth 60↔140, slnt 0↔-10, opsz 10↔80
+  const bWght=100+mx*800;
+  const bSlnt=-(mx*10);
+  const bWdth=60+scrollP*80;
+  const bOpsz=10+scrollP*70;
   bodyEls.forEach(el=>{
     el.style.fontVariationSettings=`'wght' ${bWght}, 'wdth' ${bWdth}, 'slnt' ${bSlnt}, 'opsz' ${bOpsz}`;
   });
 
-  // ── Pull quotes: larger weight range, more dramatic ──
-  const pWght=300+mx*600; // 300→900
-  const pSlnt=-(mx*6);
-  const pWdth=80+scrollP*45;
-  const pOpsz=14+scrollP*40;
+  // Pull quotes: same dramatic range
+  const pWght=100+mx*800;
+  const pSlnt=-(mx*10);
+  const pWdth=60+scrollP*80;
+  const pOpsz=14+scrollP*70;
   pullEls.forEach(el=>{
     el.style.fontVariationSettings=`'wght' ${pWght}, 'wdth' ${pWdth}, 'slnt' ${pSlnt}, 'opsz' ${pOpsz}`;
   });
 
-  // ── HUD update ──
+  // Big visible HUD
   document.getElementById('hud').innerHTML=
-    `wght:${Math.round(bWght)} wdth:${Math.round(bWdth)}% slnt:${Math.round(bSlnt)}° opsz:${Math.round(bOpsz)} &nbsp;|&nbsp; mouse→weight/slant &nbsp;|&nbsp; scroll→width/size &nbsp;|&nbsp; time→breathe`;
+    `<b>wght:</b>${Math.round(bWght)} <b>wdth:</b>${Math.round(bWdth)}% <b>slnt:</b>${Math.round(bSlnt)}&deg; <b>opsz:</b>${Math.round(bOpsz)} &nbsp;|&nbsp; mouseX:${mx.toFixed(2)} scroll:${scrollP.toFixed(2)}`;
 }
 
-requestAnimationFrame(animate);
+// Wait for fonts to load before starting
+async function start(){
+  try{await document.fonts.ready;}catch(e){}
+  document.body.style.opacity='1';
+  requestAnimationFrame(animate);
+}
+document.body.style.opacity='0.3';
+document.body.style.transition='opacity 0.5s ease';
+start();
 </script>
 
 </body>
