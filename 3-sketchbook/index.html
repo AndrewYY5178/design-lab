@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AndDream — Sketchbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;400;700&family=Indie+Flower&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  background:#e8e0d5;
+  color:#2a2218;
+  font-family:'Crimson Pro','Noto Serif SC',serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── Paper texture overlay ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.06;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+
+/* ── Coffee stains ── */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:998;opacity:.04;
+  background:
+    radial-gradient(ellipse 120px 100px at 85% 15%, #5a3a1a 0%, transparent 100%),
+    radial-gradient(ellipse 60px 50px at 20% 70%, #4a2a10 0%, transparent 100%),
+    radial-gradient(ellipse 40px 35px at 60% 85%, #5a3a1a 0%, transparent 100%);
+}
+
+/* ── Page ── */
+.page{
+  max-width:800px;margin:0 auto;padding:80px 32px 120px;
+  position:relative;z-index:1;
+}
+
+/* ── Tape strip ── */
+.tape{
+  position:absolute;z-index:10;pointer-events:none;
+  background:rgba(220,210,180,0.55);
+  border:1px solid rgba(180,160,120,0.3);
+  transform:rotate(var(--rot,-2deg));
+}
+.tape.t1{width:90px;height:28px;top:-14px;left:30px;--rot:-3deg;}
+.tape.t2{width:70px;height:24px;top:-12px;right:50px;--rot:2deg;}
+.tape.t3{width:80px;height:26px;bottom:-13px;left:100px;--rot:1.5deg;}
+.tape.t4{width:60px;height:22px;top:-11px;left:200px;--rot:-1deg;}
+
+/* ── Card (paper scrap) ── */
+.card{
+  position:relative;
+  background:#f5f0e8;
+  border:1px solid rgba(0,0,0,0.08);
+  border-radius:3px;
+  padding:36px 40px;
+  margin-bottom:44px;
+  box-shadow:
+    0 2px 12px rgba(0,0,0,0.06),
+    0 0 0 2px rgba(0,0,0,0.02);
+  transform:rotate(var(--tilt,0deg));
+}
+
+/* ── Hand-drawn underline ── */
+.hand-underline{
+  display:inline-block;position:relative;
+}
+.hand-underline::after{
+  content:'';position:absolute;left:-3px;right:-3px;bottom:-2px;height:3px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='4'%3E%3Cpath d='M2,2 Q25,-1 50,2 Q75,5 98,1' stroke='%23888070' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x;
+  background-size:50px 4px;
+  opacity:0.5;
+}
+
+/* ── Strikethrough ── */
+.strike{
+  text-decoration:line-through;text-decoration-color:rgba(180,60,40,0.5);
+  text-decoration-thickness:1.5px;
+}
+
+/* ── Hand annotation (margin note) ── */
+.note{
+  position:absolute;font-family:'Caveat','Indie Flower',cursive;
+  font-size:18px;color:#706050;transform:rotate(var(--rot,-4deg));
+  line-height:1.3;pointer-events:none;z-index:5;
+  max-width:120px;
+}
+.note::before{
+  content:'';display:block;width:30px;height:1px;background:rgba(100,80,60,0.4);
+  margin-bottom:4px;
+}
+.note.n1{top:-30px;right:-100px;--rot:-5deg;}
+.note.n2{bottom:20px;left:-110px;--rot:3deg;}
+.note.n3{top:50%;right:-115px;--rot:-2deg;}
+
+/* ── Arrow connector ── */
+.arrow{
+  position:absolute;pointer-events:none;z-index:5;
+  width:60px;height:40px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40'%3E%3Cpath d='M5,35 Q30,10 55,5' stroke='%23888070' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3Cpolygon points='52,1 58,4 52,9' fill='%23888070' opacity='0.6'/%3E%3C/svg%3E") no-repeat;
+}
+.arrow.a1{top:-35px;right:30px;}
+.arrow.a2{bottom:-30px;left:80px;transform:rotate(10deg);}
+
+/* ── Sticky note ── */
+.sticky{
+  position:absolute;z-index:6;pointer-events:none;
+  background:#ffe8a0;padding:12px 16px;
+  font-family:'Caveat','Indie Flower',cursive;
+  font-size:16px;color:#5a4a20;line-height:1.4;
+  box-shadow:1px 2px 6px rgba(0,0,0,0.1);
+  transform:rotate(var(--rot,3deg));
+  max-width:140px;
+}
+.sticky::before{content:'';position:absolute;top:-6px;left:20px;width:40px;height:8px;background:rgba(255,200,100,0.5);border-radius:2px;}
+.sticky.s1{top:-50px;right:-50px;--rot:4deg;}
+.sticky.s2{bottom:-40px;left:-60px;--rot:-3deg;}
+
+/* ── Typography ── */
+.card.hero{text-align:center;padding:56px 40px;}
+.card.hero h1{
+  font-family:'Playfair Display',serif;font-size:clamp(42px,8vw,76px);
+  font-weight:900;letter-spacing:0.12em;line-height:1.1;
+}
+.card.hero h1 .sketch{
+  display:inline-block;position:relative;
+}
+.card.hero h1 .sketch::after{
+  content:'ANDREAM';
+  position:absolute;left:2px;top:1px;color:rgba(0,0,0,0.08);
+  pointer-events:none;z-index:-1;
+  font-family:'Caveat',cursive;font-size:1.05em;
+}
+.card.hero .tagline{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(15px,2.2vw,20px);color:#777;margin-top:14px;letter-spacing:0.06em;
+}
+
+.card.content .en{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(17px,2.5vw,22px);line-height:1.7;letter-spacing:0.02em;
+}
+.card.content .zh{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(14px,1.8vw,17px);line-height:2;letter-spacing:0.03em;
+  color:#5a5040;margin-top:12px;
+}
+
+.card.pull{text-align:center;padding:44px 36px;}
+.card.pull p{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(19px,3vw,27px);line-height:1.6;letter-spacing:0.03em;
+}
+
+.card.symbols{display:flex;gap:36px;text-align:center;padding:44px 40px;}
+.card.symbols .col{flex:1;}
+.card.symbols .big{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(38px,5vw,52px);font-weight:900;line-height:1;
+}
+.card.symbols .sub{font-size:14px;color:#888;margin-top:8px;font-style:italic;}
+.card.symbols .desc{font-size:13px;color:#999;margin-top:6px;line-height:1.5;}
+.card.symbols .divider{width:1px;background:rgba(0,0,0,0.08);flex-shrink:0;}
+
+.card.closing{text-align:center;padding:44px 36px;}
+.card.closing .en-close{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(16px,2vw,19px);letter-spacing:0.04em;
+}
+.card.closing .zh-close{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(19px,2.5vw,25px);letter-spacing:0.12em;margin-top:10px;
+}
+
+/* ── Pencil sketch marks ── */
+.pencil-mark{
+  position:absolute;pointer-events:none;z-index:3;opacity:0.5;
+}
+.pencil-mark.circle{
+  width:50px;height:50px;border:1.2px solid rgba(100,80,60,0.5);
+  border-radius:50%;top:-20px;right:40px;
+}
+.pencil-mark.doodle{
+  top:10px;right:20px;width:40px;height:30px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30'%3E%3Cpath d='M5,25 Q10,5 20,15 Q30,25 35,5' stroke='%23908070' stroke-width='0.8' fill='none'/%3E%3C/svg%3E") no-repeat;
+}
+
+/* ── Paperclip ── */
+.clip{
+  position:absolute;top:-18px;right:60px;z-index:10;pointer-events:none;
+  width:20px;height:36px;border:2px solid #b0a090;border-radius:10px 10px 0 0;
+  border-bottom:none;
+}
+.clip::after{
+  content:'';position:absolute;top:10px;left:2px;width:12px;height:20px;
+  border:1.5px solid #b0a090;border-radius:6px 6px 0 0;border-bottom:none;
+}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .card.symbols{flex-direction:column;gap:24px;}
+  .card.symbols .divider{width:100%;height:1px;}
+  .page{padding:60px 16px 100px;}
+  .note,.sticky{display:none;}
+}
+
+/* ── Print ── */
+@media print{
+  body{background:white;}
+  body::before,body::after,.tape,.note,.sticky,.arrow,.pencil-mark,.clip{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ── Hero: brand name ── -->
+  <div class="card hero" style="--tilt:-0.4deg;">
+    <div class="tape t1"></div>
+    <div class="tape t2"></div>
+    <div class="pencil-mark circle"></div>
+
+    <h1><span class="sketch">ANDREAM</span></h1>
+    <p class="tagline">The Dream That Continues</p>
+    <p style="font-family:'Caveat',cursive;font-size:16px;color:#999;margin-top:8px;">
+      ~ working title, maybe drop "The"? ~
+    </p>
+  </div>
+
+  <!-- ── Origin ── -->
+  <div class="card content" style="--tilt:0.3deg;">
+    <div class="tape t3"></div>
+    <div class="note n1">keep this?<br>→ yes, core brand story</div>
+
+    <p class="en">
+      <strong>AndDream</strong> is a name born from <em>Andrew</em>, yet it reaches far beyond.
+      It begins with <strong>&ldquo;And&rdquo;</strong>&thinsp;&mdash;&thinsp;the very first sound of my name,
+      yet it also carries a deeper meaning: a word of <em>connection</em>,
+      <em>continuation</em>, and <em>endless possibilities</em>.
+    </p>
+    <p class="zh">
+      <span class="strike">AndDream，Andrew的梦想。</span><br>
+      AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，
+      但这个词更深的含义是：连接、延续、与无限可能。
+    </p>
+    <p style="font-family:'Caveat',cursive;font-size:15px;color:#b0a090;margin-top:8px;">
+      ← crossed out v1 phrasing. too literal.
+    </p>
+  </div>
+
+  <!-- ── Pull quote 1 ── -->
+  <div class="card pull" style="--tilt:-0.5deg;">
+    <div class="sticky s1">try larger?<br>✓ yes, this is key</div>
+    <div class="arrow a1"></div>
+
+    <p>&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p>
+  </div>
+
+  <!-- ── "And... Dream" ── -->
+  <div class="card content" style="--tilt:0.2deg;">
+    <div class="clip"></div>
+
+    <p class="en">
+      So <strong>AndDream</strong> is not just &ldquo;Andrew&rsquo;s Dream.&rdquo;
+      It is also <strong>&ldquo;And&hellip; Dream.&rdquo;</strong>
+      An unfinished sentence. A story still in motion.
+    </p>
+    <p class="zh">
+      所以 AndDream 不只是「Andrew 的梦想」。它也是「And&hellip; Dream」——
+      一个永远未完成的句子，一个仍在继续的故事。
+    </p>
+    <p style="font-family:'Caveat',cursive;font-size:15px;color:#b0a090;margin-top:8px;">
+      love this line. anchor the whole brand here?
+    </p>
+  </div>
+
+  <!-- ── Symbol cards ── -->
+  <div class="card symbols" style="--tilt:-0.3deg;">
+    <div class="sticky s2">final layout?<br>try side-by-side</div>
+    <div class="arrow a2"></div>
+
+    <div class="col">
+      <div class="big"><span class="hand-underline">And</span></div>
+      <div class="sub">Connection &amp; Continuation</div>
+      <div class="desc">连接、以及、还有未来。<br>每一个终点之后，都有新的开始。</div>
+    </div>
+    <div class="divider"></div>
+    <div class="col">
+      <div class="big"><span class="hand-underline">Dream</span></div>
+      <div class="sub">Imagination &amp; Creation</div>
+      <div class="desc">在艺术与音乐中，<br>梦想是想象力、情感与内心宇宙。</div>
+    </div>
+  </div>
+
+  <!-- ── Philosophy ── -->
+  <div class="card content" style="--tilt:0.4deg;">
+    <div class="note n2">italic?<br>✓ yes for en</div>
+    <div class="pencil-mark doodle"></div>
+
+    <p class="en" style="font-style:italic">
+      Every ending is followed by an &ldquo;And.&rdquo;<br>
+      Every dream leads to another dream.
+    </p>
+    <p class="zh">
+      每一个终点之后，都还有新的开始；<br>
+      每一个梦想实现之后，都孕育着下一个梦想。
+    </p>
+  </div>
+
+  <!-- ── Pull quote 2 ── -->
+  <div class="card pull" style="--tilt:-0.2deg;">
+    <div class="tape t4"></div>
+
+    <p>A space where ideas become melodies,<br>emotions become expressions,<br>and dreams become reality.</p>
+    <p style="font-family:'Caveat',cursive;font-size:15px;color:#b0a090;margin-top:8px;">
+      ~ consider adding "music" ref here? ~
+    </p>
+  </div>
+
+  <!-- ── Bridge ── -->
+  <div class="card content" style="--tilt:0.1deg;">
+    <div class="note n3">final copy? read aloud first</div>
+
+    <p class="en">
+      <strong>AndDream</strong> is a bridge between reality and imagination.
+      It belongs to Andrew, yet it does not belong to Andrew alone.
+      It is a journey&thinsp;&mdash;&thinsp;of creation, of growth,
+      and of <em>infinite possibilities</em>.
+    </p>
+    <p class="zh">
+      AndDream 是一个连接现实与梦境的空间。它属于 Andrew，也不只属于 Andrew。
+      这是一段创造、成长、与无限可能的旅程。
+    </p>
+  </div>
+
+  <!-- ── Closing ── -->
+  <div class="card closing" style="--tilt:-0.5deg;">
+    <div class="tape t1"></div>
+    <div class="tape t2"></div>
+
+    <p class="en-close">AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>and every dream begins with an &ldquo;And.&rdquo;</p>
+    <p class="zh-close">与梦同行，永不止息。</p>
+    <p style="font-family:'Caveat',cursive;font-size:16px;color:#999;margin-top:10px;">
+      ✓ approved. ship it.
+    </p>
+  </div>
+
+  <!-- ── Bonus: sketch sheet ── -->
+  <div class="card" style="--tilt:0.6deg;text-align:center;padding:40px;">
+    <p style="font-family:'Caveat',cursive;font-size:22px;color:#888;">
+      ~ logo explorations ~
+    </p>
+    <svg width="200" height="80" viewBox="0 0 200 80" style="opacity:0.5;margin:16px auto 0;display:block;">
+      <text x="100" y="30" text-anchor="middle" font-family="Playfair Display,serif" font-size="24" font-weight="900" fill="#666">ANDREAM</text>
+      <circle cx="40" cy="55" r="12" fill="none" stroke="#999" stroke-width="0.8"/>
+      <circle cx="100" cy="60" r="10" fill="none" stroke="#999" stroke-width="0.8"/>
+      <rect x="140" y="48" width="20" height="20" fill="none" stroke="#999" stroke-width="0.8" transform="rotate(15,150,58)"/>
+      <line x1="20" y1="70" x2="180" y2="70" stroke="#ccc" stroke-width="0.5"/>
+    </svg>
+    <p style="font-family:'Caveat',cursive;font-size:14px;color:#bbb;margin-top:8px;">
+      too complex. go with text-only for now.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
