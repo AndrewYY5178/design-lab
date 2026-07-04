@@ -44,7 +44,6 @@ body{
 .hero h1{
   font-family:'Fraunces',serif;font-size:clamp(56px,10vw,110px);
   font-weight:700;line-height:1;letter-spacing:-0.02em;
-  font-variation-settings:'wght' 700,'opsz' 80,'SOFT' 50,'WONK' 0.5;
 }
 .hero .tagline{
   font-size:clamp(16px,2.5vw,22px);color:var(--muted);
@@ -78,7 +77,6 @@ body{
 .symbols .big{
   font-family:'Fraunces',serif;
   font-size:clamp(42px,6vw,68px);font-weight:800;line-height:1;
-  font-variation-settings:'wght' 800,'opsz' 60,'SOFT' 30;
 }
 .symbols .sub{font-size:14px;color:var(--muted);margin-top:8px;font-style:italic;}
 .symbols .desc{font-size:13px;color:#999;margin-top:6px;line-height:1.5;}
@@ -230,36 +228,33 @@ function animate(time){
   const t=time*0.001;
   const breathe=Math.sin(t*0.4)*0.06;
 
-  // Hero: extreme range — wght 100↔900, opsz 9↔144
+  // Hero: Fraunces — use native fontWeight + fontStyle
   const hWght=100+mx*800;
-  const hOpsz=9+my*135;
-  const hSoft=my*80;
-  const hWonk=breathe*2;
   heroEls.forEach(el=>{
-    el.style.fontVariationSettings=`'wght' ${hWght}, 'opsz' ${hOpsz}, 'SOFT' ${hSoft}, 'WONK' ${hWonk}`;
+    el.style.fontWeight=hWght;
+    el.style.fontVariationSettings=`'opsz' ${9+my*135}, 'SOFT' ${my*80}, 'WONK' ${breathe*2}`;
   });
 
-  // Body: wght 100↔900, wdth 60↔140, slnt 0↔-10, opsz 10↔80
+  // Body: Roboto Flex — use native fontWeight, fontStretch, fontStyle:oblique
   const bWght=100+mx*800;
+  const bStretch=Math.round(60+scrollP*80);
   const bSlnt=-(mx*10);
-  const bWdth=60+scrollP*80;
-  const bOpsz=10+scrollP*70;
   bodyEls.forEach(el=>{
-    el.style.fontVariationSettings=`'wght' ${bWght}, 'wdth' ${bWdth}, 'slnt' ${bSlnt}, 'opsz' ${bOpsz}`;
+    el.style.fontWeight=bWght;
+    el.style.fontStretch=`${bStretch}%`;
+    el.style.fontStyle=`oblique ${bSlnt}deg`;
   });
 
-  // Pull quotes: same dramatic range
-  const pWght=100+mx*800;
-  const pSlnt=-(mx*10);
-  const pWdth=60+scrollP*80;
-  const pOpsz=14+scrollP*70;
+  // Pull quotes
   pullEls.forEach(el=>{
-    el.style.fontVariationSettings=`'wght' ${pWght}, 'wdth' ${pWdth}, 'slnt' ${pSlnt}, 'opsz' ${pOpsz}`;
+    el.style.fontWeight=100+mx*800;
+    el.style.fontStretch=`${Math.round(60+scrollP*80)}%`;
+    el.style.fontStyle=`oblique ${-(mx*10)}deg`;
   });
 
-  // Big visible HUD
+  // HUD
   document.getElementById('hud').innerHTML=
-    `<b>wght:</b>${Math.round(bWght)} <b>wdth:</b>${Math.round(bWdth)}% <b>slnt:</b>${Math.round(bSlnt)}&deg; <b>opsz:</b>${Math.round(bOpsz)} &nbsp;|&nbsp; mouseX:${mx.toFixed(2)} scroll:${scrollP.toFixed(2)}`;
+    `<b>wght:</b>${Math.round(bWght)} <b>wdth:</b>${Math.round(bStretch)}% <b>slnt:</b>${Math.round(bSlnt)}&deg; &nbsp;|&nbsp; mx:${mx.toFixed(2)} scroll:${scrollP.toFixed(2)}`;
 }
 
 // Wait for fonts to load before starting
