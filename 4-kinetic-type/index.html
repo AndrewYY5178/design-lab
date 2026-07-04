@@ -6,58 +6,37 @@
 <title>AndDream — Kinetic Type</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght,wdth,slnt@8..144,100..1000,25..151,0..-10&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
 
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{--text:#1a1a1a;--muted:#666;}
 body{
   background:#faf8f5;color:var(--text);
-  font-family:'Source Serif 4','Noto Serif SC',serif;
+  font-family:'Roboto Flex','Noto Serif SC',sans-serif;
   -webkit-font-smoothing:antialiased;min-height:100vh;
   cursor:crosshair;
 }
 .page{max-width:720px;margin:0 auto;padding:120px 24px 180px;position:relative;z-index:1;}
-
-/* ── All text elements have smooth transitions ── */
-.kinetic{
-  transition:font-weight 0.5s cubic-bezier(0.25,0.1,0.25,1),
-             font-style 0.5s cubic-bezier(0.25,0.1,0.25,1);
-}
-
-/* ── Divider ── */
 .divider{display:flex;align-items:center;gap:14px;margin:36px 0;opacity:0.2;}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--text);}
 .divider .dot{width:5px;height:5px;background:var(--text);border-radius:50%;}
 
-/* ── Hero ── */
+/* Hero */
 .hero{text-align:center;margin-bottom:48px;}
-.hero h1{
-  font-weight:700;font-size:clamp(56px,10vw,110px);
-  line-height:1;letter-spacing:-0.02em;
-}
-.hero .tagline{
-  font-size:clamp(16px,2.5vw,22px);color:var(--muted);
-  margin-top:16px;letter-spacing:0.04em;font-style:italic;
-}
+.hero h1{font-weight:700;font-size:clamp(56px,10vw,110px);line-height:1;letter-spacing:-0.02em;}
+.hero .tagline{font-size:clamp(16px,2.5vw,22px);color:var(--muted);margin-top:16px;letter-spacing:0.04em;font-style:italic;}
 
-/* ── Content ── */
+/* Content */
 .block{margin-bottom:40px;}
 .block .en{font-size:clamp(17px,2.2vw,22px);line-height:1.7;letter-spacing:0.01em;}
-.block .zh{
-  font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.6vw,17px);
-  line-height:2;color:var(--muted);margin-top:12px;
-}
+.block .zh{font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.6vw,17px);line-height:2;color:var(--muted);margin-top:12px;}
 
-/* ── Pull ── */
-.pull{
-  text-align:center;margin:48px 0;padding:32px 0;
-  border-top:1px solid rgba(0,0,0,0.08);
-  border-bottom:1px solid rgba(0,0,0,0.08);
-}
+/* Pull */
+.pull{text-align:center;margin:48px 0;padding:32px 0;border-top:1px solid rgba(0,0,0,0.08);border-bottom:1px solid rgba(0,0,0,0.08);}
 .pull p{font-size:clamp(20px,3vw,30px);line-height:1.5;}
 
-/* ── Symbols ── */
+/* Symbols */
 .symbols{display:flex;gap:40px;text-align:center;margin:48px 0;}
 .symbols .col{flex:1;}
 .symbols .big{font-weight:800;font-size:clamp(42px,6vw,68px);line-height:1;}
@@ -65,126 +44,79 @@ body{
 .symbols .desc{font-size:13px;color:#999;margin-top:6px;line-height:1.5;}
 .symbols .divider{width:1px;background:rgba(0,0,0,0.1);flex-shrink:0;}
 
-/* ── Closing ── */
+/* Closing */
 .closing{text-align:center;margin-top:72px;padding-top:40px;border-top:1px solid rgba(0,0,0,0.08);}
 .closing .en{font-size:clamp(17px,2vw,21px);}
-.closing .zh{
-  font-family:'Noto Serif SC',serif;
-  font-size:clamp(19px,2.5vw,26px);letter-spacing:0.1em;margin-top:10px;
-}
+.closing .zh{font-family:'Noto Serif SC',serif;font-size:clamp(19px,2.5vw,26px);letter-spacing:0.1em;margin-top:10px;}
 
-/* ── HUD ── */
-.hud{
-  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;
-  pointer-events:none;font-size:13px;color:#555;
-  background:rgba(255,255,255,0.8);padding:8px 18px;border-radius:20px;
-  box-shadow:0 1px 8px rgba(0,0,0,0.06);text-align:center;line-height:2;
-}
+/* HUD */
+.hud{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-size:13px;color:#555;background:rgba(255,255,255,0.85);padding:8px 18px;border-radius:20px;box-shadow:0 1px 8px rgba(0,0,0,0.06);text-align:center;line-height:2;}
 .hud b{font-weight:700;margin:0 2px 0 10px;}
 
-@media(max-width:540px){
-  .symbols{flex-direction:column;gap:28px;}
-  .symbols .divider{width:100%;height:1px;}
-  .page{padding:80px 16px 120px;}
-}
+@media(max-width:540px){.symbols{flex-direction:column;gap:28px;}.symbols .divider{width:100%;height:1px;}.page{padding:80px 16px 120px;}}
 </style>
 </head>
 <body>
 
 <div class="page">
-
-  <header class="hero">
-    <h1 class="kinetic" id="heroTitle">ANDREAM</h1>
-    <p class="tagline kinetic" id="heroTag">The Dream That Continues</p>
-  </header>
-
+  <header class="hero"><h1 class="k" data-k="hero">ANDREAM</h1><p class="tagline k" data-k="body">The Dream That Continues</p></header>
   <div class="divider"><span class="dot"></span></div>
 
-  <section class="block">
-    <p class="en kinetic" data-k="body">
-      <strong>AndDream</strong> is a name born from <em>Andrew</em>, yet it reaches far beyond.
-      It begins with <strong>&ldquo;And&rdquo;</strong>&thinsp;&mdash;&thinsp;the very first sound of my name,
-      yet it also carries a deeper meaning: a word of <em>connection</em>,
-      <em>continuation</em>, and <em>endless possibilities</em>.
-    </p>
-    <p class="zh">AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，但这个词更深的含义是：连接、延续、与无限可能。</p>
-  </section>
+  <section class="block"><p class="en k" data-k="body"><strong>AndDream</strong> is a name born from <em>Andrew</em>, yet it reaches far beyond. It begins with <strong>&ldquo;And&rdquo;</strong>&thinsp;&mdash;&thinsp;the very first sound of my name, yet it also carries a deeper meaning: a word of <em>connection</em>, <em>continuation</em>, and <em>endless possibilities</em>.</p><p class="zh">AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，但这个词更深的含义是：连接、延续、与无限可能。</p></section>
 
-  <div class="pull">
-    <p class="kinetic" data-k="pull">&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p>
-  </div>
+  <div class="pull"><p class="k" data-k="pull">&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p></div>
 
-  <section class="block">
-    <p class="en kinetic" data-k="body">
-      So <strong>AndDream</strong> is not just &ldquo;Andrew&rsquo;s Dream.&rdquo;
-      It is also <strong>&ldquo;And&hellip; Dream.&rdquo;</strong>
-      An unfinished sentence. A story still in motion.
-    </p>
-    <p class="zh">所以 AndDream 不只是「Andrew 的梦想」。它也是「And&hellip; Dream」——一个永远未完成的句子，一个仍在继续的故事。</p>
-  </section>
+  <section class="block"><p class="en k" data-k="body">So <strong>AndDream</strong> is not just &ldquo;Andrew&rsquo;s Dream.&rdquo; It is also <strong>&ldquo;And&hellip; Dream.&rdquo;</strong> An unfinished sentence. A story still in motion.</p><p class="zh">所以 AndDream 不只是「Andrew 的梦想」。它也是「And&hellip; Dream」——一个永远未完成的句子，一个仍在继续的故事。</p></section>
 
-  <div class="symbols">
-    <div class="col"><div class="big kinetic" data-k="hero">And</div><div class="sub">Connection &amp; Continuation</div><div class="desc">连接、以及、还有未来。<br>每一个终点之后，都有新的开始。</div></div>
-    <div class="divider"></div>
-    <div class="col"><div class="big kinetic" data-k="hero">Dream</div><div class="sub">Imagination &amp; Creation</div><div class="desc">在艺术与音乐中，<br>梦想是想象力、情感与内心宇宙。</div></div>
-  </div>
+  <div class="symbols"><div class="col"><div class="big k" data-k="hero">And</div><div class="sub">Connection &amp; Continuation</div><div class="desc">连接、以及、还有未来。<br>每一个终点之后，都有新的开始。</div></div><div class="divider"></div><div class="col"><div class="big k" data-k="hero">Dream</div><div class="sub">Imagination &amp; Creation</div><div class="desc">在艺术与音乐中，<br>梦想是想象力、情感与内心宇宙。</div></div></div>
 
-  <section class="block">
-    <p class="en kinetic" data-k="body" style="font-style:italic">
-      Every ending is followed by an &ldquo;And.&rdquo;<br>Every dream leads to another dream.
-    </p>
-    <p class="zh">每一个终点之后，都还有新的开始；<br>每一个梦想实现之后，都孕育着下一个梦想。</p>
-  </section>
+  <section class="block"><p class="en k" data-k="body"><em>Every ending is followed by an &ldquo;And.&rdquo;<br>Every dream leads to another dream.</em></p><p class="zh">每一个终点之后，都还有新的开始；<br>每一个梦想实现之后，都孕育着下一个梦想。</p></section>
 
-  <div class="pull">
-    <p class="kinetic" data-k="pull">A space where ideas become melodies,<br>emotions become expressions,<br>and dreams become reality.</p>
-  </div>
+  <div class="pull"><p class="k" data-k="pull">A space where ideas become melodies,<br>emotions become expressions,<br>and dreams become reality.</p></div>
 
-  <section class="block">
-    <p class="en kinetic" data-k="body">
-      <strong>AndDream</strong> is a bridge between reality and imagination.
-      It belongs to Andrew, yet it does not belong to Andrew alone.
-      It is a journey&thinsp;&mdash;&thinsp;of creation, of growth,
-      and of <em>infinite possibilities</em>.
-    </p>
-    <p class="zh">AndDream 是一个连接现实与梦境的空间。它属于 Andrew，也不只属于 Andrew。这是一段创造、成长、与无限可能的旅程。</p>
-  </section>
+  <section class="block"><p class="en k" data-k="body"><strong>AndDream</strong> is a bridge between reality and imagination. It belongs to Andrew, yet it does not belong to Andrew alone. It is a journey&thinsp;&mdash;&thinsp;of creation, of growth, and of <em>infinite possibilities</em>.</p><p class="zh">AndDream 是一个连接现实与梦境的空间。它属于 Andrew，也不只属于 Andrew。这是一段创造、成长、与无限可能的旅程。</p></section>
 
-  <footer class="closing">
-    <p class="en kinetic" data-k="body">AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>and every dream begins with an &ldquo;And.&rdquo;</p>
-    <p class="zh">与梦同行，永不止息。</p>
-  </footer>
-
+  <footer class="closing"><p class="en k" data-k="body">AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>and every dream begins with an &ldquo;And.&rdquo;</p><p class="zh">与梦同行，永不止息。</p></footer>
 </div>
 
-<div class="hud" id="hud">
-  <b>weight:</b>700 &nbsp;|&nbsp; move mouse ↔ &nbsp;|&nbsp; scroll ↕
-</div>
+<div class="hud" id="hud"><b>wght:</b>700 <b>wdth:</b>100% <b>slnt:</b>0&deg; &nbsp;|&nbsp; move ↔ &nbsp;|&nbsp; scroll ↕</div>
 
 <script>
+// Track mouse & scroll
 let mx=0.5, scrollP=0;
-
 document.addEventListener('mousemove',e=>{mx=e.clientX/window.innerWidth;});
-function updateScroll(){
-  const max=document.body.scrollHeight-window.innerHeight;
-  scrollP=max>0?window.scrollY/max:0;
-}
-window.addEventListener('scroll',updateScroll,{passive:true});updateScroll();
+function upScroll(){const m=document.body.scrollHeight-window.innerHeight;scrollP=m>0?window.scrollY/m:0;}
+window.addEventListener('scroll',upScroll,{passive:true});upScroll();
 
 const heroEls=document.querySelectorAll('[data-k="hero"]');
 const bodyEls=document.querySelectorAll('[data-k="body"]');
 const pullEls=document.querySelectorAll('[data-k="pull"]');
 
-function animate(){
+// JS smooth interpolation — lerp current→target each frame
+const state={hW:700,hWd:100,hSl:0,bW:400,bWd:100,bSl:0,pW:400,pWd:100,pSl:0};
+
+function animate(t){
   requestAnimationFrame(animate);
+  const dt=Math.min(0.05,1/60);
+  const speed=8; // higher = faster response
+  const f=1-Math.exp(-dt*speed);
 
-  // Smooth gradient: mouse X drives weight from 200↔900
-  const w=200+mx*700;
-  heroEls.forEach(el=>el.style.fontWeight=Math.round(w));
-  bodyEls.forEach(el=>{el.style.fontWeight=Math.round(w);el.style.fontStyle=scrollP>0.5?'italic':'normal';});
-  pullEls.forEach(el=>{el.style.fontWeight=Math.round(300+mx*600));});
+  // Targets
+  const tHw=100+mx*800, tHwd=60+scrollP*80, tHsl=-(mx*8);
+  const tBw=200+mx*600, tBwd=70+scrollP*75, tBsl=-(mx*8);
+  const tPw=250+mx*650, tPwd=75+scrollP*70, tPsl=-(mx*8);
 
-  document.getElementById('hud').innerHTML=`<b>weight:</b>${Math.round(w)} &nbsp;|&nbsp; move mouse ↔ for weight &nbsp;|&nbsp; scroll ↕ for style`;
+  // Smooth lerp
+  state.hW+=(tHw-state.hW)*f;state.hWd+=(tHwd-state.hWd)*f;state.hSl+=(tHsl-state.hSl)*f;
+  state.bW+=(tBw-state.bW)*f;state.bWd+=(tBwd-state.bWd)*f;state.bSl+=(tBsl-state.bSl)*f;
+  state.pW+=(tPw-state.pW)*f;state.pWd+=(tPwd-state.pWd)*f;state.pSl+=(tPsl-state.pSl)*f;
+
+  // Apply via font-variation-settings (the correct way for variable fonts)
+  heroEls.forEach(el=>{el.style.fontVariationSettings=`'wght' ${state.hW}, 'wdth' ${state.hWd}, 'slnt' ${state.hSl}`;});
+  bodyEls.forEach(el=>{el.style.fontVariationSettings=`'wght' ${state.bW}, 'wdth' ${state.bWd}, 'slnt' ${state.bSl}`;});
+  pullEls.forEach(el=>{el.style.fontVariationSettings=`'wght' ${state.pW}, 'wdth' ${state.pWd}, 'slnt' ${state.pSl}`;});
+
+  document.getElementById('hud').innerHTML=`<b>wght:</b>${Math.round(state.bW)} <b>wdth:</b>${Math.round(state.bWd)}% <b>slnt:</b>${state.bSl.toFixed(1)}&deg; &nbsp;|&nbsp; move ↔ weight/slant &nbsp;|&nbsp; scroll ↕ width`;
 }
 
 async function start(){
@@ -192,7 +124,7 @@ async function start(){
   document.body.style.opacity='1';
   requestAnimationFrame(animate);
 }
-document.body.style.opacity='0.3';document.body.style.transition='opacity 0.5s ease';
+document.body.style.opacity='0.2';document.body.style.transition='opacity 0.4s ease';
 start();
 </script>
 
