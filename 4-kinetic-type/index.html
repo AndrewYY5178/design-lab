@@ -6,14 +6,14 @@
 <title>AndDream — Kinetic Type</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght,wdth,slnt@8..144,100..1000,25..151,0..-10&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
 
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{--text:#1a1a1a;--muted:#666;}
 body{
   background:#faf8f5;color:var(--text);
-  font-family:'Roboto Flex','Noto Serif SC',sans-serif;
+  font-family:'Inter','Noto Serif SC',sans-serif;
   -webkit-font-smoothing:antialiased;min-height:100vh;
   cursor:crosshair;
 }
@@ -93,30 +93,21 @@ const bodyEls=document.querySelectorAll('[data-k="body"]');
 const pullEls=document.querySelectorAll('[data-k="pull"]');
 
 // JS smooth interpolation — lerp current→target each frame
-const state={hW:700,hWd:100,hSl:0,bW:400,bWd:100,bSl:0,pW:400,pWd:100,pSl:0};
+const state={hW:700,bW:400,pW:400};
 
 function animate(t){
   requestAnimationFrame(animate);
   const dt=Math.min(0.05,1/60);
-  const speed=8; // higher = faster response
-  const f=1-Math.exp(-dt*speed);
+  const f=1-Math.exp(-dt*8);
 
-  // Targets
-  const tHw=100+mx*800, tHwd=60+scrollP*80, tHsl=-(mx*8);
-  const tBw=200+mx*600, tBwd=70+scrollP*75, tBsl=-(mx*8);
-  const tPw=250+mx*650, tPwd=75+scrollP*70, tPsl=-(mx*8);
+  const tHw=100+mx*800, tBw=200+mx*600, tPw=250+mx*650;
+  state.hW+=(tHw-state.hW)*f;state.bW+=(tBw-state.bW)*f;state.pW+=(tPw-state.pW)*f;
 
-  // Smooth lerp
-  state.hW+=(tHw-state.hW)*f;state.hWd+=(tHwd-state.hWd)*f;state.hSl+=(tHsl-state.hSl)*f;
-  state.bW+=(tBw-state.bW)*f;state.bWd+=(tBwd-state.bWd)*f;state.bSl+=(tBsl-state.bSl)*f;
-  state.pW+=(tPw-state.pW)*f;state.pWd+=(tPwd-state.pWd)*f;state.pSl+=(tPsl-state.pSl)*f;
+  heroEls.forEach(el=>{el.style.setProperty('font-variation-settings',`'wght' ${Math.round(state.hW)}`);});
+  bodyEls.forEach(el=>{el.style.setProperty('font-variation-settings',`'wght' ${Math.round(state.bW)}`);});
+  pullEls.forEach(el=>{el.style.setProperty('font-variation-settings',`'wght' ${Math.round(state.pW)}`);});
 
-  // Apply via font-variation-settings (the correct way for variable fonts)
-  heroEls.forEach(el=>{el.style.fontVariationSettings=`'wght' ${state.hW}, 'wdth' ${state.hWd}, 'slnt' ${state.hSl}`;});
-  bodyEls.forEach(el=>{el.style.fontVariationSettings=`'wght' ${state.bW}, 'wdth' ${state.bWd}, 'slnt' ${state.bSl}`;});
-  pullEls.forEach(el=>{el.style.fontVariationSettings=`'wght' ${state.pW}, 'wdth' ${state.pWd}, 'slnt' ${state.pSl}`;});
-
-  document.getElementById('hud').innerHTML=`<b>wght:</b>${Math.round(state.bW)} <b>wdth:</b>${Math.round(state.bWd)}% <b>slnt:</b>${state.bSl.toFixed(1)}&deg; &nbsp;|&nbsp; move ↔ weight/slant &nbsp;|&nbsp; scroll ↕ width`;
+  document.getElementById('hud').innerHTML=`<b>wght:</b>${Math.round(state.bW)} &nbsp;|&nbsp; move mouse ↔ for weight (100↔900)`;
 }
 
 async function start(){
