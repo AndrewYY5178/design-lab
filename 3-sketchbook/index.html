@@ -20,11 +20,15 @@ body{
   overflow-x:hidden;
 }
 
-/* ── Paper texture overlay ── */
+/* ── Paper texture — heavy grain + fibers ── */
 body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.06;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:200px 200px;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  opacity:0.09;
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.015) 3px,rgba(0,0,0,0.015) 4px),
+    repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(0,0,0,0.01) 1px,rgba(0,0,0,0.01) 2px);
+  background-size:200px 200px,100% 8px,100% 4px;
 }
 
 /* ── Coffee stains ── */
@@ -203,6 +207,34 @@ body::after{
   border:1.5px solid #b0a090;border-radius:6px 6px 0 0;border-bottom:none;
 }
 
+/* ── Pinned photo ── */
+.photo-card{
+  position:relative;display:inline-block;margin:20px 0 36px;
+  background:#fff;padding:10px 10px 35px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.12);
+  transform:rotate(var(--rot,2deg));
+  max-width:240px;
+}
+.photo-card img{width:100%;display:block;}
+.photo-card::after{
+  content:attr(data-label);position:absolute;bottom:8px;left:0;right:0;
+  text-align:center;font-family:'Caveat',cursive;font-size:14px;color:#999;
+}
+.photo-tape{
+  position:absolute;top:-10px;z-index:2;pointer-events:none;
+  width:60px;height:20px;background:rgba(220,210,180,0.6);
+  border:0.5px solid rgba(180,160,120,0.25);
+  transform:rotate(-2deg);
+}
+.photo-tape.t1{left:20px;}
+.photo-tape.t2{right:25px;transform:rotate(3deg);}
+
+/* ── Inline scribble ── */
+.scribble{
+  font-family:'Caveat',cursive;font-size:17px;color:#887060;
+  display:inline-block;transform:rotate(-1deg);margin:0 4px;
+}
+
 /* ── Responsive ── */
 @media(max-width:600px){
   .card.symbols{flex-direction:column;gap:24px;}
@@ -247,12 +279,9 @@ body::after{
       <em>continuation</em>, and <em>endless possibilities</em>.
     </p>
     <p class="zh">
-      <span class="strike">AndDream，Andrew的梦想。</span><br>
+      <span class="strike">AndDream，Andrew的梦想。</span> <span class="scribble">too literal</span><br>
       AndDream 这个名字源于 Andrew，也超越了 Andrew。它以「And」开头——我名字的第一个音节，
-      但这个词更深的含义是：连接、延续、与无限可能。
-    </p>
-    <p style="font-family:'Caveat',cursive;font-size:15px;color:#b0a090;margin-top:8px;">
-      ← crossed out v1 phrasing. too literal.
+      但这个词更深的含义是：<span class="scribble">← key word!</span> 连接、延续、与无限可能。
     </p>
   </div>
 
@@ -262,6 +291,20 @@ body::after{
     <div class="arrow a1"></div>
 
     <p>&ldquo;And&rdquo; is a word that never stands alone;<br>it always points toward something more.</p>
+    <p class="scribble" style="margin-top:6px;">← underline this!!!</p>
+  </div>
+
+  <!-- ── Photo break: reference images ── -->
+  <div style="text-align:center;margin:10px 0 40px;">
+    <div class="photo-card" style="--rot:-3deg;display:inline-block;margin-right:16px;" data-label="ref · moodboard">
+      <div class="photo-tape t1"></div>
+      <img src="photo1.jpg" alt="brand reference" loading="lazy">
+    </div>
+    <div class="photo-card" style="--rot:2.5deg;display:inline-block;" data-label="color study">
+      <div class="photo-tape t2"></div>
+      <img src="photo2.jpg" alt="color study" loading="lazy">
+    </div>
+    <p class="scribble" style="display:block;margin-top:8px;">moodboard — dark tones + gold accent</p>
   </div>
 
   <!-- ── "And... Dream" ── -->
@@ -348,9 +391,20 @@ body::after{
 
     <p class="en-close">AndDream&thinsp;&mdash;&thinsp;where the story never ends,<br>and every dream begins with an &ldquo;And.&rdquo;</p>
     <p class="zh-close">与梦同行，永不止息。</p>
-    <p style="font-family:'Caveat',cursive;font-size:16px;color:#999;margin-top:10px;">
-      ✓ approved. ship it.
-    </p>
+    <p class="scribble" style="display:block;margin-top:8px;">✓ approved. ship it.</p>
+  </div>
+
+  <!-- ── More pinned photos ── -->
+  <div style="text-align:center;margin:10px 0 40px;">
+    <div class="photo-card" style="--rot:2deg;display:inline-block;margin-right:12px;" data-label="composition test">
+      <div class="photo-tape t1"></div>
+      <img src="photo3.jpg" alt="composition test" loading="lazy">
+    </div>
+    <div class="photo-card" style="--rot:-2.5deg;display:inline-block;" data-label="texture ref">
+      <div class="photo-tape t2"></div>
+      <img src="photo4.jpg" alt="texture reference" loading="lazy">
+    </div>
+    <p class="scribble" style="display:block;margin-top:8px;">these work. use as bg inspiration.</p>
   </div>
 
   <!-- ── Bonus: sketch sheet ── -->
