@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Act IV — The Forest of Glass Dew</title>
+<style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;height:100vh;cursor:none}canvas{display:block}
+#title{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:clamp(16px,2.5vw,24px);color:rgba(255,255,255,0.5);letter-spacing:0.15em;transition:opacity 2s ease}
+#hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;transition:opacity 1s ease}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="title">Act IV · The Forest of Glass Dew</div><div id="hint">scroll —</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0a18);scene.fog=new THREE.FogExp2(0x0a0a18,0.0002);
+const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,300);camera.position.set(0,5,40);
+const r=new THREE.WebGLRenderer({antialias:true});r.setSize(innerWidth,innerHeight);r.setPixelRatio(Math.min(devicePixelRatio,2));r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.2;document.body.appendChild(r.domElement);
+const composer=new EffectComposer(r);composer.addPass(new RenderPass(scene,camera));const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.5,0.4,0.9);bloom.threshold=0.5;bloom.strength=1.2;bloom.radius=0.5;composer.addPass(bloom);
+
+scene.add(new THREE.AmbientLight(0x111133,0.4));
+const moon=new THREE.DirectionalLight(0x8899cc,8);moon.position.set(10,40,-10);scene.add(moon);
+const accent1=new THREE.PointLight(0x6644aa,20,60);accent1.position.set(-15,8,10);scene.add(accent1);
+const accent2=new THREE.PointLight(0x4488cc,15,50);accent2.position.set(20,5,-15);scene.add(accent2);
+
+// Crystal tree builder
+function crystalTree(x,z){
+  const g=new THREE.Group();g.position.set(x,-2,z);
+  const mat=new THREE.MeshPhysicalMaterial({color:0xc8d8f0,roughness:0.1,metalness:0.05,transmission:0.4,thickness:0.5,envMapIntensity:0.3});
+  const loader=new GLTFLoader();
+  loader.load('crystal.glb',gltf=>{
+    [6,9,12,14].forEach(h=>{
+      const c=gltf.scene.clone(true);c.traverse(ch=>{if(ch.isMesh){ch.material=mat;ch.material.color.setHSL(0.6,0.3,0.5+Math.random()*0.4);}});
+      c.scale.setScalar(0.4+Math.random()*0.5);c.position.y=h;c.rotation.set(Math.random()*0.5,Math.random()*Math.PI*2,Math.random()*0.5);
+      g.add(c);
+    });
+    // Sub-branches
+    for(let i=0;i<6;i++){
+      const sub=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.15,2+Math.random()*4,6),mat);
+      sub.position.set((Math.random()-0.5)*3,6+Math.random()*8,(Math.random()-0.5)*3);
+      sub.rotation.set(Math.random(),Math.random(),Math.random());g.add(sub);
+    }
+  });
+  return g;
+}
+const trees=[];for(let i=0;i<25;i++){const t=crystalTree((Math.random()-0.5)*60,(Math.random()-0.5)*40-10);trees.push(t);scene.add(t);}
+
+// Dewdrops with inner skies
+const dewdrops=[];
+function createDewdrop(x,y,z,skyColor){
+  const d=new THREE.Group();d.position.set(x,y,z);
+  // Outer glass sphere
+  const outer=new THREE.Mesh(new THREE.SphereGeometry(0.4,16,16),new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:0,metalness:0,transmission:0.95,thickness:0.8,envMapIntensity:0.2}));
+  d.add(outer);
+  // Inner sky — tiny colored sphere or point light
+  const inner=new THREE.Mesh(new THREE.SphereGeometry(0.15,8,8),new THREE.MeshBasicMaterial({color:skyColor}));
+  d.add(inner);
+  // Tiny sparkle
+  const spark=new THREE.PointLight(skyColor,0.3,2);
+  d.add(spark);
+  d.userData={outer,inner,spark,skyColor,baseY:y};
+  return d;
+}
+const skyColors=[0xff8866,0x66aadd,0xffcc88,0x8866cc,0xffdddd,0x6688cc,0x88ddcc,0xddaadd];
+for(let i=0;i<80;i++){
+  const d=createDewdrop((Math.random()-0.5)*50,2+Math.random()*20,(Math.random()-0.5)*40-10,skyColors[i%skyColors.length]);
+  dewdrops.push(d);scene.add(d);
+}
+
+// Floating particles (galaxy dust)
+const PN=2000;const pGeo=new THREE.BufferGeometry();const pPos=new Float32Array(PN*3);
+for(let i=0;i<PN;i++){pPos[i*3]=(Math.random()-0.5)*60;pPos[i*3+1]=Math.random()*30;pPos[i*3+2]=(Math.random()-0.5)*50-10;}
+pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+const pMat=new THREE.PointsMaterial({color:0xaaaadd,size:0.08,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false});
+const particles=new THREE.Points(pGeo,pMat);scene.add(particles);
+
+// Camera
+let progress=0;
+function onWheel(e){e.preventDefault();progress+=e.deltaY*0.0002;progress=Math.max(0,Math.min(1,progress));}
+window.addEventListener('wheel',onWheel,{passive:false});
+
+function animate(t){
+  requestAnimationFrame(animate);const s=t*0.001;const cp=progress||0.001;
+  camera.position.z=40-cp*60;camera.position.y=5+Math.sin(cp*2)*3;camera.position.x=Math.sin(cp)*10;
+  camera.lookAt(Math.sin(cp*1.5)*5,6,camera.position.z-10);
+
+  // Dewdrops float gently, sparkle
+  dewdrops.forEach((d,i)=>{d.position.y=d.userData.baseY+Math.sin(s*0.8+i*0.3)*0.5;d.userData.spark.intensity=0.2+Math.sin(s*2+i)*0.15;});
+
+  // Particles drift
+  const pp=pGeo.attributes.position.array;
+  for(let i=0;i<PN;i++){pp[i*3+1]+=Math.sin(s+i*0.01)*0.01;pp[i*3]+=Math.cos(s*0.5+i*0.005)*0.005;}
+  pGeo.attributes.position.needsUpdate=true;
+
+  document.getElementById('hint').style.opacity=progress>0.05?'0':'1';
+  composer.render();
+}
+requestAnimationFrame(animate);
+window.addEventListener('resize',()=>{const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();r.setSize(w,h);composer.setSize(w,h);});
+</script>
+</body>
+</html>
