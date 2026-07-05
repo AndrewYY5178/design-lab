@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AndDream — A Journey Beyond Reality</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;height:100vh;font-family:'Playfair Display',serif;}
+canvas{display:block;}
+#loading{position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1s ease;}
+#loading.hidden{opacity:0;pointer-events:none;}
+#loading .logo{font-size:clamp(24px,4vw,40px);font-weight:900;letter-spacing:0.15em;color:#e8e6e1;}
+#loading .bar{width:200px;height:2px;background:rgba(255,255,255,0.1);margin-top:20px;border-radius:1px;overflow:hidden;}
+#loading .bar .fill{height:100%;background:#fff;transition:width 0.3s ease;width:0%;}
+#zoneLabel{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;text-align:center;transition:opacity 0.8s ease;}
+#zoneLabel .title{font-size:clamp(14px,2vw,20px);font-weight:700;color:#fff;letter-spacing:0.15em;text-shadow:0 0 20px rgba(255,255,255,0.5);}
+#zoneLabel .sub{font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;letter-spacing:0.1em;}
+#hint{position:fixed;bottom:20px;right:24px;z-index:10;pointer-events:none;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;}
+#progress{position:fixed;bottom:0;left:0;height:2px;background:rgba(255,255,255,0.3);z-index:20;transition:width 0.3s linear;pointer-events:none;}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="loading"><div class="logo">ANDREAM</div><div class="bar"><div class="fill" id="loadFill"></div></div></div>
+<div id="zoneLabel"><div class="title" id="zoneTitle"></div><div class="sub" id="zoneSub"></div></div>
+<div id="hint">→ skip</div><div id="progress"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// ── Scene ──
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x000010);
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.5,500);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;
+document.body.appendChild(renderer.domElement);
+const Cp=new EffectComposer(renderer);Cp.addPass(new RenderPass(scene,camera));
+const B=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.4,0.3,0.9);B.threshold=0.5;B.strength=1.2;B.radius=0.5;Cp.addPass(B);
+
+// ── Lighting ──
+const ambient=new THREE.AmbientLight(0x222244,0.5);scene.add(ambient);
+const sun=new THREE.DirectionalLight(0xfff5e0,8);sun.position.set(20,40,10);scene.add(sun);
+const fill=new THREE.PointLight(0x8899cc,20,100);fill.position.set(-20,10,20);scene.add(fill);
+
+// ── Fog ──
+scene.fog=new THREE.FogExp2(0x000010,0.0003);
+
+// ── Starfield ──
+const SN=4000;const sGeo=new THREE.BufferGeometry();const sPos=new Float32Array(SN*3);
+for(let i=0;i<SN;i++){const a=Math.random()*Math.PI*2;const phi=Math.acos(2*Math.random()-1);const r=80+Math.random()*200;sPos[i*3]=Math.cos(a)*Math.sin(phi)*r;sPos[i*3+1]=Math.sin(a)*Math.sin(phi)*r;sPos[i*3+2]=Math.cos(phi)*r;}
+sGeo.setAttribute('position',new THREE.BufferAttribute(sPos,3));
+const sM=new THREE.PointsMaterial({color:0x8888cc,size:0.3,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false});scene.add(new THREE.Points(sGeo,sM));
+
+// ── Ground ──
+const gGeo=new THREE.PlaneGeometry(800,800);const gMat=new THREE.MeshStandardMaterial({color:0x1a1a2e,roughness:0.9});const ground=new THREE.Mesh(gGeo,gMat);ground.rotation.x=-Math.PI/2;ground.position.y=-5;scene.add(ground);
+
+// ── Zones config ──
+const ZONES=[
+  {name:'The Threshold of Heaven',sub:'Act I',pos:[0,5,120],fog:0x000010},
+  {name:'The Ocean Above the Sky',sub:'Act II',pos:[60,15,80],fog:0x0a0a20},
+  {name:'The Valley of Sunflowers',sub:'Act III',pos:[30,6,20],fog:0x1a1008},
+  {name:'The Forest of Glass Dew',sub:'Act IV',pos:[-20,8,-30],fog:0x0a0a18},
+  {name:'The Piano of the River',sub:'Act V',pos:[-60,4,-60],fog:0x1a1020},
+  {name:'The Garden Beneath the Moon',sub:'Act VI',pos:[-30,10,-100],fog:0x0a0818},
+  {name:'The Rain of Pearls',sub:'Act VII',pos:[20,20,-140],fog:0x0a0a1e},
+  {name:'The Deer Between Stars',sub:'Act VIII',pos:[60,12,-180],fog:0x020210},
+  {name:'The Birth of Dreams',sub:'Act IX',pos:[0,0,-220],fog:0x000010},
+  {name:'And...',sub:'Act X',pos:[0,5,-250],fog:0xffeedd},
+];
+
+// ── Camera path ──
+const curve=new THREE.CatmullRomCurve3(ZONES.map(z=>new THREE.Vector3(z.pos[0],z.pos[1],z.pos[2])),false,'catmullrom',0.5);
+
+// ── Load models ──
+const loader=new GLTFLoader();
+const MODEL_DIR='models/';
+const models={};
+let loadedCount=0;
+const totalModels=9;
+const loadFill=document.getElementById('loadFill');
+
+function loadModel(name,onLoad){
+  loader.load(MODEL_DIR+name+'.glb',gltf=>{
+    const m=gltf.scene;m.name=name;
+    m.traverse(c=>{if(c.isMesh){c.material.roughness=Math.min(c.material.roughness||0.5,0.6);c.material.metalness=Math.max(c.material.metalness||0,0.05);}});
+    models[name]=m;scene.add(m);loadedCount++;loadFill.style.width=(loadedCount/totalModels*100)+'%';
+    if(onLoad)onLoad(m);
+    if(loadedCount===totalModels)document.getElementById('loading').classList.add('hidden');
+  });
+}
+
+// Place models in their zones
+loadModel('whale',m=>{m.position.set(50,25,85);m.scale.setScalar(3);});
+loadModel('whale',m=>{m.position.set(70,30,75);m.scale.setScalar(2.5);m.rotation.y=0.5;});
+loadModel('whale',m=>{m.position.set(40,22,90);m.scale.setScalar(2);m.rotation.y=-0.3;});
+loadModel('sunflower',m=>{
+  for(let i=0;i<30;i++){const c=m.clone();c.position.set(20+(Math.random()-0.5)*60,-2,10+(Math.random()-0.5)*30);c.scale.setScalar(0.5+Math.random());c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
+});
+loadModel('deer',m=>{m.position.set(35,0,15);m.scale.setScalar(2);});
+loadModel('crystal',m=>{
+  for(let i=0;i<20;i++){const c=m.clone();c.position.set(-30+(Math.random()-0.5)*40,0,-40+(Math.random()-0.5)*30);c.scale.setScalar(0.8+Math.random()*1.5);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
+});
+loadModel('piano',m=>{m.position.set(-60,0,-60);m.scale.setScalar(3);});
+loadModel('tulip',m=>{
+  for(let i=0;i<25;i++){const c=m.clone();c.position.set(-40+(Math.random()-0.5)*50,0,-110+(Math.random()-0.5)*30);c.scale.setScalar(0.8+Math.random());scene.add(c);}
+});
+loadModel('shell',m=>{
+  for(let i=0;i<15;i++){const c=m.clone();c.position.set(-35+(Math.random()-0.5)*40,0,-100+(Math.random()-0.5)*25);c.scale.setScalar(0.3+Math.random()*0.5);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
+});
+loadModel('cliff',m=>{m.position.set(60,5,-180);m.scale.setScalar(2);});
+loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.setScalar(4);});
+
+// ── Zone particles ──
+const zoneParticles=[];
+function createZoneParticles(count,pos,spread,color){
+  const geo=new THREE.BufferGeometry();const p=new Float32Array(count*3);
+  for(let i=0;i<count;i++){p[i*3]=pos[0]+(Math.random()-0.5)*spread;p[i*3+1]=pos[1]+(Math.random()-0.5)*spread*0.5;p[i*3+2]=pos[2]+(Math.random()-0.5)*spread;}
+  geo.setAttribute('position',new THREE.BufferAttribute(p,3));
+  const mat=new THREE.PointsMaterial({color,size:0.3,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending,depthWrite:false});
+  const pts=new THREE.Points(geo,mat);scene.add(pts);
+  return{geo,pts};
+}
+ZONES.slice(0,9).forEach(z=>{zoneParticles.push(createZoneParticles(500,z.pos,40,z.fog));});
+
+// ── State ──
+let progress=0,targetProgress=0,autoSpeed=0.008;
+const lookTarget=new THREE.Vector3(0,0,0);
+const smoothLook=new THREE.Vector3(0,0,0);
+const el=document.getElementById('zoneLabel'),et=document.getElementById('zoneTitle'),es=document.getElementById('zoneSub');
+
+function updateZone(i){
+  const z=ZONES[Math.min(i,ZONES.length-1)];
+  et.textContent=z.name;es.textContent=z.sub;
+  el.style.opacity=progress>0.02?'1':'0';
+  // Smooth fog transition
+  const c=new THREE.Color(z.fog);scene.fog=new THREE.FogExp2(c,0.0003);
+}
+
+// ── Controls ──
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'){e.preventDefault();targetProgress=Math.min(1,targetProgress+0.12);}
+  if(e.key==='ArrowLeft'){e.preventDefault();targetProgress=Math.max(0,targetProgress-0.12);}
+});
+
+// ── Animate ──
+function animate(t){
+  requestAnimationFrame(animate);
+  const s=t*0.001;
+  // Auto-advance + lerp toward target
+  targetProgress+=autoSpeed*0.008;
+  targetProgress=Math.min(1,targetProgress);
+  progress+=(targetProgress-progress)*0.02;
+
+  const pt=curve.getPointAt(Math.min(1,progress));
+  camera.position.lerp(pt,0.03);
+  // Look slightly ahead
+  const ahead=curve.getPointAt(Math.min(1,progress+0.005));
+  smoothLook.lerp(ahead,0.05);
+  camera.lookAt(smoothLook);
+
+  // Zone
+  const zi=Math.floor(progress*10);
+  updateZone(zi);
+
+  // Dynamic ambient
+  const hue=0.6+progress*0.4;ambient.color.setHSL(hue,0.3,0.3+progress*0.1);
+
+  // Rotate seed
+  if(models.seed){models.seed.rotation.y+=0.005;}
+
+  // Progress bar
+  document.getElementById('progress').style.width=(progress*100)+'%';
+
+  Cp.render();
+}
+requestAnimationFrame(animate);
+
+// ── Resize ──
+window.addEventListener('resize',()=>{
+  const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();
+  renderer.setSize(w,h);Cp.setSize(w,h);
+});
+</script>
+</body>
+</html>
