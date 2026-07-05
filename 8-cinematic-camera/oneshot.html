@@ -139,29 +139,37 @@ loadModel('shell',m=>{
 loadModel('cliff',m=>{m.position.set(60,8,-180);m.scale.setScalar(18);});
 loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.setScalar(15);});
 
-// ── ANDREAM Morph Particles — scatter at first, converge at Act X ──
+// ── ANDREAM Morph Particles — million-level, volumetric, close-range ──
 function buildTextTargets(text,spread){
-  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=160;
+  const canvas=document.createElement('canvas');canvas.width=2048;canvas.height=320;
   const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';
-  ctx.font='bold 100px Playfair Display,serif';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(text,512,80);
-  const img=ctx.getImageData(0,0,1024,160).data;
-  const targets=[];const step=4;
-  for(let y=0;y<160;y+=step){for(let x=0;x<1024;x+=step){if(img[(y*1024+x)*4+3]>100){targets.push((x-512)/512*spread,(-y+80)/160*spread*0.3,0);}}}
+  ctx.font='bold 200px Playfair Display,serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(text,1024,160);
+  const img=ctx.getImageData(0,0,2048,320).data;
+  const targets=[];const step=2; // dense sampling
+  for(let y=0;y<320;y+=step){for(let x=0;x<2048;x+=step){if(img[(y*2048+x)*4+3]>80){targets.push((x-1024)/1024*spread,(-y+160)/320*spread*0.3,0);}}}
   return targets;
 }
-const textTargets=buildTextTargets('ANDREAM',50);
-const MP=textTargets.length/3; // morph particle count
+const textTargets=buildTextTargets('ANDREAM',55);
+const baseP=textTargets.length/3; // ~25K base text particles
+// Million-level: each base point spawns ~40 jittered copies
+const MULT=40;const MP=baseP*MULT; // ~1,000,000 particles
 const mGeo=new THREE.BufferGeometry();const mPos=new Float32Array(MP*3);const mCol=new Float32Array(MP*3);
-const scatterPos=new Float32Array(MP*3); // random scattered positions
-for(let i=0;i<MP;i++){
-  scatterPos[i*3]=(Math.random()-0.5)*120;scatterPos[i*3+1]=(Math.random()-0.5)*40;scatterPos[i*3+2]=(Math.random()-0.5)*80;
-  mPos[i*3]=scatterPos[i*3];mPos[i*3+1]=scatterPos[i*3+1];mPos[i*3+2]=scatterPos[i*3+2];
-  mCol[i*3]=0.95;mCol[i*3+1]=0.7+Math.random()*0.2;mCol[i*3+2]=0.4+Math.random()*0.35;
+for(let i=0;i<baseP;i++){
+  const bx=textTargets[i*3],by=textTargets[i*3+1],bz=textTargets[i*3+2];
+  for(let j=0;j<MULT;j++){
+    const idx=(i*MULT+j)*3;
+    // Initial: scattered in a large cloud
+    mPos[idx]=(Math.random()-0.5)*100;mPos[idx+1]=(Math.random()-0.5)*35;mPos[idx+2]=(Math.random()-0.5)*60;
+    // Store target in a separate array for animation
+    if(j===0){textTargets[i*3]=bx;textTargets[i*3+1]=by;textTargets[i*3+2]=bz;}
+    // Color — golden with variation
+    mCol[idx]=0.9+Math.random()*0.1;mCol[idx+1]=0.65+Math.random()*0.25;mCol[idx+2]=0.35+Math.random()*0.4;
+  }
 }
 mGeo.setAttribute('position',new THREE.BufferAttribute(mPos,3));mGeo.setAttribute('color',new THREE.BufferAttribute(mCol,3));
-const mM=new THREE.PointsMaterial({size:0.3,vertexColors:true,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
-const morphParticles=new THREE.Points(mGeo,mM);morphParticles.position.set(0,2,-245);scene.add(morphParticles);
+const mM=new THREE.PointsMaterial({size:0.18,vertexColors:true,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
+const morphParticles=new THREE.Points(mGeo,mM);morphParticles.position.set(0,1.5,-40);scene.add(morphParticles);
 
 // ── Themed zone particle clusters (each act's atmosphere) ──
 const zoneParticles=[];
@@ -257,26 +265,30 @@ function animate(t){
   // Rotate seed gently
   if(models.seed){models.seed.rotation.y+=0.003;}
 
-  // ── ANDREAM morph: smooth ease-out convergence (like particle brand #11) ──
-  const morphRaw=Math.max(0,Math.min(1,(progress-0.83)/0.14));
-  // Ease-out cubic — slow at end for "settling" feel
-  const morphFactor=1-Math.pow(1-morphRaw,3);
+  // ── ANDREAM morph: million particles converge at Act X ──
+  const morphRaw=Math.max(0,Math.min(1,(progress-0.80)/0.17));
+  const morphFactor=1-Math.pow(1-morphRaw,3); // ease-out cubic
   const mArr=morphParticles.geometry.attributes.position.array;
-  for(let i=0;i<MP;i++){
-    const i3=i*3;
-    const tx=morphParticles.position.x+(textTargets[i3]||0);
-    const ty=morphParticles.position.y+(textTargets[i3+1]||0);
-    const tz=morphParticles.position.z+(textTargets[i3+2]||0);
-    // Smooth lerp — slow convergence like #11
-    const speed=0.02+morphFactor*0.06;
-    mArr[i3]+=(tx-mArr[i3])*speed;
-    mArr[i3+1]+=(ty-mArr[i3+1])*speed;
-    mArr[i3+2]+=(tz-mArr[i3+2])*speed;
+  // Each block of MULT particles targets one base text position
+  for(let i=0;i<baseP;i++){
+    const tx=morphParticles.position.x+textTargets[i*3]; // target x
+    const ty=morphParticles.position.y+textTargets[i*3+1]; // target y
+    const tz=morphParticles.position.z+textTargets[i*3+2]; // target z
+    for(let j=0;j<MULT;j++){
+      const idx=(i*MULT+j)*3;
+      // Add micro-jitter so particles form a fuzzy volumetric shape
+      const jx=tx+(Math.random()-0.5)*0.3*morphFactor;
+      const jy=ty+(Math.random()-0.5)*0.2*morphFactor;
+      const jz=tz+(Math.random()-0.5)*0.5*(1-morphFactor);
+      const speed=0.015+morphFactor*0.07;
+      mArr[idx]+=(jx-mArr[idx])*speed;
+      mArr[idx+1]+=(jy-mArr[idx+1])*speed;
+      mArr[idx+2]+=(jz-mArr[idx+2])*speed;
+    }
   }
   morphParticles.geometry.attributes.position.needsUpdate=true;
-  morphParticles.material.opacity=0.25+morphFactor*0.65;
-  // Particles glow brighter as they converge
-  morphParticles.material.size=0.15+morphFactor*0.25;
+  morphParticles.material.opacity=0.2+morphFactor*0.7;
+  morphParticles.material.size=0.12+morphFactor*0.2;
 
   // Progress bar
   document.getElementById('progress').style.width=(progress*100)+'%';
