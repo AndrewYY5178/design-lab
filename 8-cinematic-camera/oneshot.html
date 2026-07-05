@@ -144,30 +144,31 @@ loadModel('shell',m=>{
 // Act VIII: Cliff — 7x larger
 loadModel('cliff',m=>{m.position.set(60,5,-180);m.scale.setScalar(0.84);});
 // Act IX: Seed — 5x larger
-// ── ANDREAM particle text (Act IX-X) ──
-function createTextParticles(text,x,y,z,spread){
-  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=200;
-  const ctx=canvas.getContext('2d');
-  ctx.fillStyle='#fff';ctx.font='bold 120px Playfair Display,serif';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(text,512,100);
-  const imgData=ctx.getImageData(0,0,1024,200).data;
-  const pts=[];const step=3;
-  for(let py=0;py<200;py+=step){for(let px=0;px<1024;px+=step){
-    const idx=(py*1024+px)*4;if(imgData[idx+3]>128){pts.push((px-512)/512*spread,(-py+100)/200*spread*0.4,(Math.random()-0.5)*spread*0.3);}
-  }}
-  if(pts.length===0)return null;
-  const geo=new THREE.BufferGeometry();const pos=new Float32Array(pts);
-  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const col=new Float32Array((pts.length/3)*3);
-  for(let i=0;i<pts.length/3;i++){col[i*3]=0.9+Math.random()*0.1;col[i*3+1]=0.7+Math.random()*0.2;col[i*3+2]=0.5+Math.random()*0.3;}
-  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
-  const mat=new THREE.PointsMaterial({size:0.8,vertexColors:true,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
-  const p=new THREE.Points(geo,mat);p.position.set(x,y,z);scene.add(p);
-  return p;
-}
-let textParticles=createTextParticles('ANDREAM',0,5,-250,60);
-
 loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.setScalar(1.0);});
+
+// ── ANDREAM Morph Particles — scatter at first, converge at Act X ──
+function buildTextTargets(text,spread){
+  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=160;
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';
+  ctx.font='bold 100px Playfair Display,serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(text,512,80);
+  const img=ctx.getImageData(0,0,1024,160).data;
+  const targets=[];const step=4;
+  for(let y=0;y<160;y+=step){for(let x=0;x<1024;x+=step){if(img[(y*1024+x)*4+3]>100){targets.push((x-512)/512*spread,(-y+80)/160*spread*0.3,0);}}}
+  return targets;
+}
+const textTargets=buildTextTargets('ANDREAM',50);
+const MP=textTargets.length/3; // morph particle count
+const mGeo=new THREE.BufferGeometry();const mPos=new Float32Array(MP*3);const mCol=new Float32Array(MP*3);
+const scatterPos=new Float32Array(MP*3); // random scattered positions
+for(let i=0;i<MP;i++){
+  scatterPos[i*3]=(Math.random()-0.5)*120;scatterPos[i*3+1]=(Math.random()-0.5)*40;scatterPos[i*3+2]=(Math.random()-0.5)*80;
+  mPos[i*3]=scatterPos[i*3];mPos[i*3+1]=scatterPos[i*3+1];mPos[i*3+2]=scatterPos[i*3+2];
+  mCol[i*3]=0.95;mCol[i*3+1]=0.7+Math.random()*0.2;mCol[i*3+2]=0.4+Math.random()*0.35;
+}
+mGeo.setAttribute('position',new THREE.BufferAttribute(mPos,3));mGeo.setAttribute('color',new THREE.BufferAttribute(mCol,3));
+const mM=new THREE.PointsMaterial({size:0.3,vertexColors:true,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
+const morphParticles=new THREE.Points(mGeo,mM);morphParticles.position.set(0,2,-245);scene.add(morphParticles);
 
 // ── Themed zone particle clusters (each act's atmosphere) ──
 const zoneParticles=[];
@@ -262,6 +263,21 @@ function animate(t){
 
   // Rotate seed gently
   if(models.seed){models.seed.rotation.y+=0.003;}
+
+  // ── ANDREAM morph: scatter → converge when progress > 0.85 (Act X) ──
+  const morphFactor=Math.max(0,Math.min(1,(progress-0.85)/0.12));
+  const mArr=morphParticles.geometry.attributes.position.array;
+  for(let i=0;i<MP;i++){
+    const i3=i*3;
+    const tx=morphParticles.position.x+(textTargets[i3]||0);
+    const ty=morphParticles.position.y+(textTargets[i3+1]||0);
+    const tz=morphParticles.position.z+(textTargets[i3+2]||0);
+    mArr[i3]+=(tx-mArr[i3])*morphFactor*0.08;
+    mArr[i3+1]+=(ty-mArr[i3+1])*morphFactor*0.08;
+    mArr[i3+2]+=(tz-mArr[i3+2])*morphFactor*0.08;
+  }
+  morphParticles.geometry.attributes.position.needsUpdate=true;
+  morphParticles.material.opacity=0.3+morphFactor*0.6;
 
   // Progress bar
   document.getElementById('progress').style.width=(progress*100)+'%';
