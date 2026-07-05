@@ -51,11 +51,28 @@ const fill=new THREE.PointLight(0x8899cc,20,100);fill.position.set(-20,10,20);sc
 // ── Fog ──
 scene.fog=new THREE.FogExp2(0x000010,0.0003);
 
-// ── Starfield ──
-const SN=4000;const sGeo=new THREE.BufferGeometry();const sPos=new Float32Array(SN*3);
-for(let i=0;i<SN;i++){const a=Math.random()*Math.PI*2;const phi=Math.acos(2*Math.random()-1);const r=80+Math.random()*200;sPos[i*3]=Math.cos(a)*Math.sin(phi)*r;sPos[i*3+1]=Math.sin(a)*Math.sin(phi)*r;sPos[i*3+2]=Math.cos(phi)*r;}
-sGeo.setAttribute('position',new THREE.BufferAttribute(sPos,3));
-const sM=new THREE.PointsMaterial({color:0x8888cc,size:0.3,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false});scene.add(new THREE.Points(sGeo,sM));
+// ── Deep Starfield (far background) ──
+const SN=8000;const sGeo=new THREE.BufferGeometry();const sPos=new Float32Array(SN*3);const sCol=new Float32Array(SN*3);
+for(let i=0;i<SN;i++){const a=Math.random()*Math.PI*2;const phi=Math.acos(2*Math.random()-1);const r=100+Math.random()*300;sPos[i*3]=Math.cos(a)*Math.sin(phi)*r;sPos[i*3+1]=Math.sin(a)*Math.sin(phi)*r;sPos[i*3+2]=Math.cos(phi)*r;
+  sCol[i*3]=0.5+Math.random()*0.3;sCol[i*3+1]=0.5+Math.random()*0.3;sCol[i*3+2]=0.6+Math.random()*0.4;}
+sGeo.setAttribute('position',new THREE.BufferAttribute(sPos,3));sGeo.setAttribute('color',new THREE.BufferAttribute(sCol,3));
+const sM=new THREE.PointsMaterial({size:0.25,vertexColors:true,transparent:true,opacity:0.45,blending:THREE.AdditiveBlending,depthWrite:false});scene.add(new THREE.Points(sGeo,sM));
+
+// ── Atmospheric Dust (全场景金色微尘 — Ghibli/Makoto Shinkai style) ──
+const DN=12000;const dGeo=new THREE.BufferGeometry();const dPos=new Float32Array(DN*3);const dCol=new Float32Array(DN*3);const dSiz=new Float32Array(DN);
+for(let i=0;i<DN;i++){dPos[i*3]=(Math.random()-0.5)*300;dPos[i*3+1]=(Math.random()-0.5)*120;dPos[i*3+2]=(Math.random()-0.5)*350;
+  dCol[i*3]=0.85+Math.random()*0.15;dCol[i*3+1]=0.7+Math.random()*0.25;dCol[i*3+2]=0.4+Math.random()*0.4;dSiz[i]=0.08+Math.random()*0.3;}
+dGeo.setAttribute('position',new THREE.BufferAttribute(dPos,3));dGeo.setAttribute('color',new THREE.BufferAttribute(dCol,3));dGeo.setAttribute('size',new THREE.BufferAttribute(dSiz,1));
+const dM=new THREE.PointsMaterial({size:0.15,vertexColors:true,transparent:true,opacity:0.35,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
+const dust=new THREE.Points(dGeo,dM);scene.add(dust);
+
+// ── Sparkle Layer (前景光斑 — larger, slower, fewer) ──
+const FN=3000;const fGeo=new THREE.BufferGeometry();const fPos=new Float32Array(FN*3);const fCol=new Float32Array(FN*3);
+for(let i=0;i<FN;i++){fPos[i*3]=(Math.random()-0.5)*200;fPos[i*3+1]=(Math.random()-0.5)*80;fPos[i*3+2]=(Math.random()-0.5)*250;
+  const gold=Math.random()>0.4;fCol[i*3]=gold?1:0.6+Math.random()*0.3;fCol[i*3+1]=gold?0.85+Math.random()*0.15:0.7+Math.random()*0.3;fCol[i*3+2]=gold?0.5+Math.random()*0.3:0.9+Math.random()*0.1;}
+fGeo.setAttribute('position',new THREE.BufferAttribute(fPos,3));fGeo.setAttribute('color',new THREE.BufferAttribute(fCol,3));
+const fM=new THREE.PointsMaterial({size:0.5,vertexColors:true,transparent:true,opacity:0.25,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
+const sparkles=new THREE.Points(fGeo,fM);scene.add(sparkles);
 
 // ── Ground ──
 const gGeo=new THREE.PlaneGeometry(800,800);const gMat=new THREE.MeshStandardMaterial({color:0x1a1a2e,roughness:0.9});const ground=new THREE.Mesh(gGeo,gMat);ground.rotation.x=-Math.PI/2;ground.position.y=-5;scene.add(ground);
@@ -116,17 +133,33 @@ loadModel('shell',m=>{
 loadModel('cliff',m=>{m.position.set(60,5,-180);m.scale.setScalar(2);});
 loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.setScalar(4);});
 
-// ── Zone particles ──
+// ── Themed zone particle clusters (each act's atmosphere) ──
 const zoneParticles=[];
-function createZoneParticles(count,pos,spread,color){
-  const geo=new THREE.BufferGeometry();const p=new Float32Array(count*3);
-  for(let i=0;i<count;i++){p[i*3]=pos[0]+(Math.random()-0.5)*spread;p[i*3+1]=pos[1]+(Math.random()-0.5)*spread*0.5;p[i*3+2]=pos[2]+(Math.random()-0.5)*spread;}
-  geo.setAttribute('position',new THREE.BufferAttribute(p,3));
-  const mat=new THREE.PointsMaterial({color,size:0.3,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending,depthWrite:false});
+const ZONE_COLORS=[
+  0xffeedd, // Act I — warm gold
+  0xaaccff, // Act II — sky blue
+  0xffdd88, // Act III — sunflower gold
+  0xccddff, // Act IV — crystal blue
+  0xeeeeff, // Act V — piano white
+  0xddaaff, // Act VI — moonlit lavender
+  0xffffff, // Act VII — pearl white
+  0x8899ff, // Act VIII — star blue
+  0xffddaa, // Act IX — warm dream
+];
+function createZoneParticles(pos,spread,colorIdx){
+  const count=1500+Math.floor(Math.random()*500);
+  const geo=new THREE.BufferGeometry();const p=new Float32Array(count*3);const c=new Float32Array(count*3);
+  const baseCol=new THREE.Color(ZONE_COLORS[colorIdx%ZONE_COLORS.length]);
+  for(let i=0;i<count;i++){
+    p[i*3]=pos[0]+(Math.random()-0.5)*spread*1.5;p[i*3+1]=pos[1]+(Math.random()-0.5)*spread;p[i*3+2]=pos[2]+(Math.random()-0.5)*spread*1.5;
+    c[i*3]=baseCol.r+Math.random()*0.15;c[i*3+1]=baseCol.g+Math.random()*0.15;c[i*3+2]=baseCol.b+Math.random()*0.15;
+  }
+  geo.setAttribute('position',new THREE.BufferAttribute(p,3));geo.setAttribute('color',new THREE.BufferAttribute(c,3));
+  const mat=new THREE.PointsMaterial({size:0.35,vertexColors:true,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
   const pts=new THREE.Points(geo,mat);scene.add(pts);
   return{geo,pts};
 }
-ZONES.slice(0,9).forEach(z=>{zoneParticles.push(createZoneParticles(500,z.pos,40,z.fog));});
+ZONES.slice(0,9).forEach((z,i)=>{zoneParticles.push(createZoneParticles(z.pos,50,i));});
 
 // ── State ──
 let progress=0,targetProgress=0,autoSpeed=0.008;
@@ -168,11 +201,31 @@ function animate(t){
   const zi=Math.floor(progress*10);
   updateZone(zi);
 
-  // Dynamic ambient
-  const hue=0.6+progress*0.4;ambient.color.setHSL(hue,0.3,0.3+progress*0.1);
+  // Dynamic ambient — shifts from cool blue → warm gold across the journey
+  const hue=0.6+progress*0.15;ambient.color.setHSL(hue,0.25,0.3+progress*0.12);
 
-  // Rotate seed
-  if(models.seed){models.seed.rotation.y+=0.005;}
+  // Animate dust — slow drift, slight upward float
+  const dArr=dust.geometry.attributes.position.array;
+  for(let i=0;i<Math.min(3000,DN);i+=3){
+    dArr[i]+=Math.sin(s*0.3+i*0.01)*0.008;dArr[i+2]+=Math.cos(s*0.25+i*0.01)*0.008;
+    if(dArr[i+1]>60)dArr[i+1]=-60;if(dArr[i+1]<-60)dArr[i+1]=60;}
+  dust.geometry.attributes.position.needsUpdate=true;
+
+  // Sparkles pulse
+  sparkles.material.opacity=0.15+Math.sin(s*0.5)*0.1+progress*0.15;
+
+  // Zone particles — gentle orbit
+  zoneParticles.forEach((zp,i)=>{
+    const arr=zp.geo.attributes.position.array;
+    const z=ZONES[i];const ox=z.pos[0],oy=z.pos[1],oz=z.pos[2];
+    for(let j=0;j<Math.min(500,arr.length/3);j+=3){
+      const dx=arr[j]-ox,dz=arr[j+2]-oz;const angle=Math.atan2(dz,dx)+0.002;
+      const dist=Math.sqrt(dx*dx+dz*dz);arr[j]=ox+Math.cos(angle)*dist;arr[j+2]=oz+Math.sin(angle)*dist;
+      arr[j+1]+=(oy-arr[j+1])*0.001+Math.sin(s+j*0.1)*0.02;}
+    zp.geo.attributes.position.needsUpdate=true;});
+
+  // Rotate seed gently
+  if(models.seed){models.seed.rotation.y+=0.003;}
 
   // Progress bar
   document.getElementById('progress').style.width=(progress*100)+'%';
