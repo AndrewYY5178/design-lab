@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Act V — The Piano of the River</title>
+<style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden;height:100vh;cursor:none}canvas{display:block}
+#hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;transition:opacity 1s ease}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head><body>
+<div id="hint">scroll —</div>
+<script type="module">
+import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const S=new THREE.Scene();S.background=new THREE.Color(0x1a1020);S.fog=new THREE.FogExp2(0x1a1020,0.0003);
+const C=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,200);C.position.set(0,6,35);
+const R=new THREE.WebGLRenderer({antialias:true});R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.2;document.body.appendChild(R.domElement);
+const Cp=new EffectComposer(R);Cp.addPass(new RenderPass(S,C));const B=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.6,0.3,0.9);B.threshold=0.5;B.strength=1.0;B.radius=0.5;Cp.addPass(B);
+
+S.add(new THREE.AmbientLight(0x221122,0.5));
+const sun=new THREE.DirectionalLight(0xffccaa,8);sun.position.set(20,30,10);S.add(sun);
+const warm=new THREE.PointLight(0xffaa88,30,50);warm.position.set(-10,5,5);S.add(warm);
+
+// Water plane with reflection shader
+const wGeo=new THREE.PlaneGeometry(80,60);
+const wMat=new THREE.ShaderMaterial({uniforms:{uTime:{value:0}},vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,fragmentShader:`uniform float uTime;varying vec2 vUv;float n(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5);}void main(){float w=n(vUv*20.0+uTime*0.1)*0.5+n(vUv*40.0-uTime*0.15)*0.3+n(vUv*80.0+uTime*0.2)*0.2;vec3 c=mix(vec3(0.9,0.7,0.5),vec3(0.7,0.4,0.3),w);gl_FragColor=vec4(c,0.9);}`,transparent:true,depthWrite:false});
+const water=new THREE.Mesh(wGeo,wMat);water.rotation.x=-Math.PI/2;water.position.y=-2;S.add(water);
+
+// Piano
+const LOADER=new GLTFLoader();LOADER.load('piano.glb',g=>{const p=g.scene;p.scale.setScalar(0.4);p.position.set(0,-0.5,0);p.rotation.y=0.2;S.add(p);});
+
+// Glass fish
+function glassFish(x,y,z){const f=new THREE.Group();f.position.set(x,y,z);
+const b=new THREE.Mesh(new THREE.SphereGeometry(0.3,8,8),new THREE.MeshPhysicalMaterial({color:0xffeedd,roughness:0,metalness:0,transmission:0.9,thickness:0.3}));f.add(b);
+const tail=new THREE.Mesh(new THREE.ConeGeometry(0.25,0.8,6),new THREE.MeshPhysicalMaterial({color:0xffccaa,roughness:0,metalness:0,transmission:0.8,thickness:0.2}));tail.rotation.x=Math.PI/2;tail.position.z=-0.6;f.add(tail);
+f.userData={speed:0.5+Math.random(),amp:Math.random()*2,phase:Math.random()*Math.PI*2};return f;}
+const fish=[];for(let i=0;i<15;i++){const f=glassFish((Math.random()-0.5)*30,-1.5,(Math.random()-0.5)*20);fish.push(f);S.add(f);}
+
+// Feathers
+const FN=400;const fGeo=new THREE.BufferGeometry();const fPos=new Float32Array(FN*3);
+for(let i=0;i<FN;i++){fPos[i*3]=(Math.random()-0.5)*40;fPos[i*3+1]=Math.random()*20;fPos[i*3+2]=(Math.random()-0.5)*30;}
+fGeo.setAttribute('position',new THREE.BufferAttribute(fPos,3));
+const fM=new THREE.PointsMaterial({color:0xffffff,size:0.15,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending,depthWrite:false});S.add(new THREE.Points(fGeo,fM));
+
+let progress=0;
+function onWheel(e){e.preventDefault();progress+=e.deltaY*0.0002;progress=Math.max(0,Math.min(1,progress));}
+window.addEventListener('wheel',onWheel,{passive:false});
+
+function animate(t){requestAnimationFrame(animate);const s=t*0.001,cp=progress||0.001;
+C.position.z=35-cp*50;C.position.y=4+Math.sin(cp)*3;C.position.x=Math.sin(cp*0.8)*8;C.lookAt(0,2,C.position.z-10);
+wMat.uniforms.uTime.value=s;
+fish.forEach(f=>{f.position.x+=Math.sin(s*f.userData.phase)*0.02;f.position.z+=f.userData.speed*0.02;f.rotation.y+=0.02;if(f.position.z>15)f.position.z=-15;});
+const fp=fGeo.attributes.position.array;for(let i=0;i<FN;i++){fp[i*3+1]+=0.02;if(fp[i*3+1]>20)fp[i*3+1]=0;}fGeo.attributes.position.needsUpdate=true;
+document.getElementById('hint').style.opacity=progress>0.05?'0':'1';Cp.render();}
+requestAnimationFrame(animate);
+window.addEventListener('resize',()=>{const w=innerWidth,h=innerHeight;C.aspect=w/h;C.updateProjectionMatrix();R.setSize(w,h);Cp.setSize(w,h);});
+</script></body></html>
