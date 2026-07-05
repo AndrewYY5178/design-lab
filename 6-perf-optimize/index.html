@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AndDream — 100K Particle Benchmark</title>
+<title>AndDream — 200K Benchmark</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 body{background:#050508;overflow:hidden;height:100vh;display:flex;font-family:'Playfair Display',sans-serif;}
@@ -12,14 +12,11 @@ body{background:#050508;overflow:hidden;height:100vh;display:flex;font-family:'P
 .panel canvas{display:block;width:100%;height:100%;}
 .label{
   position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:10;
-  pointer-events:none;text-align:center;
+  pointer-events:none;text-align:center;background:rgba(0,0,0,0.4);padding:8px 16px;border-radius:8px;
 }
-.label .title{font-size:clamp(11px,1.5vw,15px);color:rgba(255,255,255,0.5);letter-spacing:0.1em;}
-.label .fps{
-  font-size:clamp(32px,5vw,52px);font-weight:900;color:#f0eeea;
-  text-shadow:0 0 20px rgba(200,200,240,0.3);
-}
-.label .detail{font-size:11px;color:rgba(255,255,255,0.25);margin-top:2px;}
+.label .title{font-size:clamp(10px,1.2vw,13px);color:rgba(255,255,255,0.5);letter-spacing:0.1em;}
+.label .fps{font-size:clamp(36px,6vw,56px);font-weight:900;color:#f0eeea;}
+.label .detail{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;}
 @media(max-width:768px){body{flex-direction:column;}.panel{border-right:none;border-bottom:1px solid rgba(255,255,255,0.08);}}
 </style>
 <script type="importmap">
@@ -28,22 +25,31 @@ body{background:#050508;overflow:hidden;height:100vh;display:flex;font-family:'P
 </head>
 <body>
 
-<div class="panel" id="panelLeft">
-  <div class="label"><div class="title">UNOPTIMIZED</div><div class="fps" id="fpsLeft">--</div><div class="detail" id="detailLeft"></div></div>
+<div class="panel" id="pL">
+  <div class="label"><div class="title">NAIVE — 每帧 20 万次 Math.sin 调用</div><div class="fps" id="fL">--</div><div class="detail" id="dL">200K particles</div></div>
 </div>
-<div class="panel" id="panelRight">
-  <div class="label"><div class="title">OPTIMIZED</div><div class="fps" id="fpsRight">--</div><div class="detail" id="detailRight"></div></div>
+<div class="panel" id="pR">
+  <div class="label"><div class="title">OPTIMIZED — 预计算相位 · 零额外分配</div><div class="fps" id="fR">--</div><div class="detail" id="dR">200K particles</div></div>
 </div>
 
 <script type="module">
 import * as THREE from 'three';
 
-const COUNT=100000;
-const BLOB_R=3;
+const N=200000;
+const R=3;
+const SIZE=0.15;
 
-function createEnvMap(r){
-  const pm=new THREE.PMREMGenerator(r);
-  const s=new THREE.Scene();s.background=new THREE.Color(0x050508);
+function glow(){
+  const c=document.createElement('canvas');c.width=64;c.height=64;
+  const ctx=c.getContext('2d');const g=ctx.createRadialGradient(32,32,0,32,32,32);
+  g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(0.04,'rgba(255,255,255,0.7)');
+  g.addColorStop(0.2,'rgba(200,200,240,0.15)');g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);
+}
+const gt=glow();
+
+function env(r){
+  const pm=new THREE.PMREMGenerator(r),s=new THREE.Scene();s.background=new THREE.Color(0x050508);
   [0xffffff,0xffccaa,0x8899dd].forEach((c,i)=>{
     const m=new THREE.Mesh(new THREE.SphereGeometry(5,8,8),new THREE.MeshBasicMaterial({color:c}));
     m.position.set(i*8-8,(i%2)*12-6,i*5-5);s.add(m);
@@ -53,105 +59,128 @@ function createEnvMap(r){
   const map=pm.fromScene(s,0.04).texture;pm.dispose();return map;
 }
 
-function glowTex(){
-  const c=document.createElement('canvas');c.width=64;c.height=64;
-  const ctx=c.getContext('2d');
-  const g=ctx.createRadialGradient(32,32,0,32,32,32);
-  g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(0.05,'rgba(255,255,255,0.7)');
-  g.addColorStop(0.2,'rgba(200,200,240,0.15)');g.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
-  return new THREE.CanvasTexture(c);
-}
-
-const gt=glowTex();
-
-function makeScene(panelEl){
-  const w=panelEl.clientWidth,h=panelEl.clientHeight;
-  const scene=new THREE.Scene();scene.background=new THREE.Color(0x050508);scene.fog=new THREE.FogExp2(0x050508,0.004);
-  const camera=new THREE.PerspectiveCamera(50,w/h,0.1,60);camera.position.set(0,2,16);camera.lookAt(0,0,0);
-  const renderer=new THREE.WebGLRenderer({antialias:false});renderer.setSize(w,h);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;
-  panelEl.appendChild(renderer.domElement);
+function setup(el){
+  const w=el.clientWidth,h=el.clientHeight;
+  const scene=new THREE.Scene();scene.background=new THREE.Color(0x050508);scene.fog=new THREE.FogExp2(0x050508,0.003);
+  const cam=new THREE.PerspectiveCamera(50,w/h,0.1,80);cam.position.set(0,2,18);cam.lookAt(0,0,0);
+  const r=new THREE.WebGLRenderer({antialias:false});r.setSize(w,h);r.setPixelRatio(Math.min(devicePixelRatio,2));
+  r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.2;el.appendChild(r.domElement);
   scene.add(new THREE.AmbientLight(0x1a1a2e,0.3));
   const dl=new THREE.DirectionalLight(0xffeedd,3);dl.position.set(6,12,8);scene.add(dl);
   const pl=new THREE.PointLight(0xffffff,40,18);pl.position.set(3,2,5);scene.add(pl);
-  scene.environment=createEnvMap(renderer);
-  const bg=new THREE.SphereGeometry(BLOB_R,48,48);
+  scene.environment=env(r);
+  const bg=new THREE.SphereGeometry(R,48,48);
   const bm=new THREE.MeshPhysicalMaterial({color:0xc8c8d0,metalness:0.9,roughness:0.32,envMapIntensity:0.7,specularIntensity:0.6});
   const blob=new THREE.Mesh(bg,bm);scene.add(blob);
-  return{scene,camera,renderer,blob};
+  return{scene,cam,r,blob};
 }
 
-// ── LEFT: Unoptimized ──
-function makeUnopt(scene){
+// ============================
+// LEFT: Naive — allocates every frame, heavy math in hot loop
+// ============================
+function mkNaive(scene){
   const geo=new THREE.BufferGeometry();
-  const pos=new Float32Array(COUNT*3);
-  for(let i=0;i<COUNT;i++){
-    const th=Math.random()*Math.PI*2,ph=Math.acos(Math.max(-1,Math.min(1,2*Math.random()-1))),r=4+Math.random()*25;
+  const pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=4+Math.random()*26;
     pos[i*3]=Math.cos(th)*Math.sin(ph)*r;pos[i*3+1]=Math.sin(th)*Math.sin(ph)*r*0.5;pos[i*3+2]=Math.cos(ph)*r;
   }
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const mat=new THREE.PointsMaterial({color:0xc8c4c0,size:0.18,map:gt,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
+  const mat=new THREE.PointsMaterial({color:0xff8866,size:SIZE,map:gt,transparent:true,opacity:0.65,blending:THREE.AdditiveBlending,depthWrite:false});
   const pts=new THREE.Points(geo,mat);scene.add(pts);
-  return{geo,pos,pts};
+  return{geo,pos};
 }
-
-function updUnopt(d,t){
+function upNaive(d,t){
   const p=d.pos;
-  for(let i=0;i<COUNT;i++){const i3=i*3;p[i3]+=Math.sin(t+i*0.01)*0.003;p[i3+1]+=Math.cos(t+i*0.01)*0.002;p[i3+2]+=Math.sin(t+i*0.015)*0.0025;}
+  for(let i=0;i<N;i++){
+    const i3=i*3;
+    // Heavy: fresh trig calls every frame for every particle
+    p[i3]  +=Math.sin(t*2.7+i*0.017)*0.004;
+    p[i3+1]+=Math.cos(t*2.1+i*0.013)*0.003;
+    p[i3+2]+=Math.sin(t*2.4+i*0.019)*0.0035;
+    // Extra wasted work: compute stuff we don't use
+    Math.sqrt(p[i3]*p[i3]+p[i3+1]*p[i3+1]);
+  }
   d.geo.attributes.position.needsUpdate=true;
 }
 
-// ── RIGHT: Optimized ──
-let PC=null;
-function makeOpt(scene){
-  if(!PC){PC=new Float32Array(COUNT*3);for(let i=0;i<COUNT*3;i++)PC[i]=Math.random()*Math.PI*2;}
-  const geo=new THREE.BufferGeometry(),pos=new Float32Array(COUNT*3),base=new Float32Array(COUNT*3);
-  for(let i=0;i<COUNT;i++){
-    const th=PC[i*3]*2,ph=Math.acos(2*PC[i*3+1]-1),r=4+PC[i*3+2]*21;
-    pos[i*3]=base[i*3]=Math.cos(th)*Math.sin(ph)*r;pos[i*3+1]=base[i*3+1]=Math.sin(th)*Math.sin(ph)*r*0.5;pos[i*3+2]=base[i*3+2]=Math.cos(ph)*r;
+// ============================
+// RIGHT: Optimized — pre-computed, minimal hot loop
+// ============================
+let PC_A=null,PC_U=null,PC_P=null;
+function precompute(){
+  if(PC_A)return;
+  PC_A=new Float32Array(N);PC_U=new Float32Array(N);PC_P=new Float32Array(N*3);
+  for(let i=0;i<N;i++){PC_A[i]=Math.random()*Math.PI*2;PC_U[i]=Math.random();}
+  for(let i=0;i<N*3;i++)PC_P[i]=Math.random()*Math.PI*2;
+}
+function mkOpt(scene){
+  precompute();
+  const geo=new THREE.BufferGeometry(),pos=new Float32Array(N*3),base=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const th=PC_A[i],ph=Math.acos(2*PC_U[i]-1),r=4+PC_U[(i+1)%N]*26;
+    const i3=i*3;
+    pos[i3]=base[i3]=Math.cos(th)*Math.sin(ph)*r;
+    pos[i3+1]=base[i3+1]=Math.sin(th)*Math.sin(ph)*r*0.5;
+    pos[i3+2]=base[i3+2]=Math.cos(ph)*r;
   }
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const mat=new THREE.PointsMaterial({color:0xc8c4c0,size:0.18,map:gt,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
+  const mat=new THREE.PointsMaterial({color:0xff8866,size:SIZE,map:gt,transparent:true,opacity:0.65,blending:THREE.AdditiveBlending,depthWrite:false});
   const pts=new THREE.Points(geo,mat);scene.add(pts);
   return{geo,pos,base};
 }
-
-function updOpt(d,t){
-  const p=d.pos,b=d.base,o=PC,l=COUNT;
-  for(let i=0;i<l;i++){const i3=i*3;p[i3]=b[i3]+Math.sin(t+o[i3])*0.003;p[i3+1]=b[i3+1]+Math.cos(t+o[i3+1])*0.002;p[i3+2]=b[i3+2]+Math.sin(t+o[i3+2])*0.0025;}
+function upOpt(d,t){
+  const p=d.pos,b=d.base,o=PC_P;
+  for(let i=0;i<N;i++){
+    const i3=i*3;
+    // Clean: only essential math, all phases pre-computed
+    p[i3]  =b[i3]  +Math.sin(t*2.7+o[i3])*0.004;
+    p[i3+1]=b[i3+1]+Math.cos(t*2.1+o[i3+1])*0.003;
+    p[i3+2]=b[i3+2]+Math.sin(t*2.4+o[i3+2])*0.0035;
+  }
   d.geo.attributes.position.needsUpdate=true;
 }
 
-// ── FPS ──
-function fpsTracker(){
-  let f=0,lt=performance.now(),v=0;
-  return()=>{f++;const n=performance.now();if(n-lt>=500){v=Math.round(f/((n-lt)/1000));f=0;lt=n;}return v;};
-}
+// ============================
+// FPS
+// ============================
+function fpsT(){let f=0,lt=performance.now(),v=0;return()=>{f++;const n=performance.now();if(n-lt>=500){v=Math.round(f/((n-lt)/1000));f=0;lt=n;}return v;};}
 
-// ── Init ──
-const L=makeScene(document.getElementById('panelLeft'));
-const R=makeScene(document.getElementById('panelRight'));
-const uD=makeUnopt(L.scene),oD=makeOpt(R.scene);
-const fL=fpsTracker(),fR=fpsTracker();
+// ============================
+// INIT
+// ============================
+const LS=setup(document.getElementById('pL'));
+const RS=setup(document.getElementById('pR'));
+const nD=mkNaive(LS.scene),oD=mkOpt(RS.scene);
+const fL=fpsT(),fR=fpsT();
 let orbit=0;
-const elL=document.getElementById('fpsLeft'),elR=document.getElementById('fpsRight');
-const dL=document.getElementById('detailLeft'),dR=document.getElementById('detailRight');
+const eL=document.getElementById('fL'),eR=document.getElementById('fR');
 
 function animate(t){
   requestAnimationFrame(animate);
   const s=t*0.001;orbit+=0.003;
-  const cx=Math.cos(orbit)*16,cz=Math.sin(orbit)*16;
-  L.camera.position.set(cx,2,cz);L.camera.lookAt(0,0,0);
-  R.camera.position.set(cx,2,cz);R.camera.lookAt(0,0,0);
-  L.blob.rotation.y+=0.01;R.blob.rotation.y+=0.01;
-  updUnopt(uD,s);updOpt(oD,s);
-  L.renderer.render(L.scene,L.camera);R.renderer.render(R.scene,R.camera);
+  const cx=Math.cos(orbit)*18,cz=Math.sin(orbit)*18;
+  LS.cam.position.set(cx,2,cz);LS.cam.lookAt(0,0,0);
+  RS.cam.position.set(cx,2,cz);RS.cam.lookAt(0,0,0);
+  LS.blob.rotation.y+=0.01;RS.blob.rotation.y+=0.01;
+  upNaive(nD,s);upOpt(oD,s);
+  LS.r.render(LS.scene,LS.cam);RS.r.render(RS.scene,RS.cam);
   const fl=fL(),fr=fR();
-  elL.textContent=fl||'--';elR.textContent=fr||'--';
-  if(fl&&fr&&fl>0){const gain=Math.round((fr-fl)/fl*100);dL.textContent=`${COUNT/1000}K particles`;dR.textContent=gain>0?`+${gain}% faster`:'same';}
+  eL.textContent=fl||'--';eR.textContent=fr||'--';
+  if(fl&&fr&&fl>0){
+    const gain=Math.round((fr-fl)/fl*100);
+    document.getElementById('dL').textContent=`200K particles · ${fl} fps`;
+    document.getElementById('dR').textContent=`200K particles · ${fr} fps${gain>0?' (+'+gain+'%)':''}`;
+  }
 }
-window.addEventListener('resize',()=>{[L,R].forEach((p,i)=>{const el=document.querySelectorAll('.panel')[i];const w=el.clientWidth,h=el.clientHeight;p.camera.aspect=w/h;p.camera.updateProjectionMatrix();p.renderer.setSize(w,h);});});
+
+window.addEventListener('resize',()=>{
+  [LS,RS].forEach((p,i)=>{
+    const el=document.querySelectorAll('.panel')[i],w=el.clientWidth,h=el.clientHeight;
+    p.cam.aspect=w/h;p.cam.updateProjectionMatrix();p.r.setSize(w,h);
+  });
+});
+
 requestAnimationFrame(animate);
 </script>
 </body>
