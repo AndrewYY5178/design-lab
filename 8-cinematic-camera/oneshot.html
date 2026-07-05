@@ -257,20 +257,26 @@ function animate(t){
   // Rotate seed gently
   if(models.seed){models.seed.rotation.y+=0.003;}
 
-  // ── ANDREAM morph: scatter → converge when progress > 0.85 (Act X) ──
-  const morphFactor=Math.max(0,Math.min(1,(progress-0.85)/0.12));
+  // ── ANDREAM morph: smooth ease-out convergence (like particle brand #11) ──
+  const morphRaw=Math.max(0,Math.min(1,(progress-0.83)/0.14));
+  // Ease-out cubic — slow at end for "settling" feel
+  const morphFactor=1-Math.pow(1-morphRaw,3);
   const mArr=morphParticles.geometry.attributes.position.array;
   for(let i=0;i<MP;i++){
     const i3=i*3;
     const tx=morphParticles.position.x+(textTargets[i3]||0);
     const ty=morphParticles.position.y+(textTargets[i3+1]||0);
     const tz=morphParticles.position.z+(textTargets[i3+2]||0);
-    mArr[i3]+=(tx-mArr[i3])*morphFactor*0.08;
-    mArr[i3+1]+=(ty-mArr[i3+1])*morphFactor*0.08;
-    mArr[i3+2]+=(tz-mArr[i3+2])*morphFactor*0.08;
+    // Smooth lerp — slow convergence like #11
+    const speed=0.02+morphFactor*0.06;
+    mArr[i3]+=(tx-mArr[i3])*speed;
+    mArr[i3+1]+=(ty-mArr[i3+1])*speed;
+    mArr[i3+2]+=(tz-mArr[i3+2])*speed;
   }
   morphParticles.geometry.attributes.position.needsUpdate=true;
-  morphParticles.material.opacity=0.3+morphFactor*0.6;
+  morphParticles.material.opacity=0.25+morphFactor*0.65;
+  // Particles glow brighter as they converge
+  morphParticles.material.size=0.15+morphFactor*0.25;
 
   // Progress bar
   document.getElementById('progress').style.width=(progress*100)+'%';
