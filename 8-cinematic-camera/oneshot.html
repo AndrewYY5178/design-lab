@@ -30,7 +30,6 @@ canvas{display:block;}
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
@@ -96,10 +95,7 @@ const ZONES=[
 const curve=new THREE.CatmullRomCurve3(ZONES.map(z=>new THREE.Vector3(z.pos[0],z.pos[1],z.pos[2])),false,'catmullrom',0.5);
 
 // ── Load models ──
-const dracoLoader=new DRACOLoader();
-dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
 const loader=new GLTFLoader();
-loader.setDRACOLoader(dracoLoader);
 const MODEL_DIR='models/';
 const models={};
 let loadedCount=0;
