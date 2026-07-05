@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Act IX — The Birth of Dreams</title>
+<style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden;height:100vh;cursor:none}canvas{display:block}
+#title{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:clamp(20px,4vw,40px);color:rgba(255,255,255,0);letter-spacing:0.15em;text-align:center;transition:opacity 3s ease;}
+#hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;transition:opacity 1s ease}
+</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head><body>
+<div id="title">AndDream</div><div id="hint">scroll —</div>
+<script type="module">
+import * as THREE from 'three';import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const S=new THREE.Scene();S.background=new THREE.Color(0x000010);
+const C=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,150);C.position.set(0,0,50);
+const R=new THREE.WebGLRenderer({antialias:true});R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.4;document.body.appendChild(R.domElement);
+const Cp=new EffectComposer(R);Cp.addPass(new RenderPass(S,C));const B=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.3,0.3,0.95);B.threshold=0.4;B.strength=2.0;B.radius=0.4;Cp.addPass(B);
+
+S.add(new THREE.AmbientLight(0x111133,0.3));
+const core=new THREE.PointLight(0xffffff,5,100);core.position.set(0,0,0);S.add(core);
+
+// Orbiting particles — all elements converging
+const ON=2000;const oGeo=new THREE.BufferGeometry();const oPos=new Float32Array(ON*3),oD=new Float32Array(ON*3);
+for(let i=0;i<ON;i++){const a=Math.random()*Math.PI*2;const phi=Math.acos(2*Math.random()-1);const r=10+Math.random()*40;oPos[i*3]=Math.cos(a)*Math.sin(phi)*r;oPos[i*3+1]=Math.sin(a)*Math.sin(phi)*r;oPos[i*3+2]=Math.cos(phi)*r;oD[i*3]=r;oD[i*3+1]=a;oD[i*3+2]=phi;}
+oGeo.setAttribute('position',new THREE.BufferAttribute(oPos,3));
+const oMat=new THREE.PointsMaterial({color:0xddccff,size:0.2,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
+const orbitParticles=new THREE.Points(oGeo,oMat);S.add(orbitParticles);
+
+// Central seed
+const seedGeo=new THREE.SphereGeometry(0.5,16,16);
+const seedMat=new THREE.MeshBasicMaterial({color:0xffffff});
+const seed=new THREE.Mesh(seedGeo,seedMat);S.add(seed);
+
+// Colorful particle rings
+const rings=[];
+for(let c=0;c<5;c++){
+  const RN=500;const rGeo=new THREE.BufferGeometry();const rPos=new Float32Array(RN*3);
+  for(let i=0;i<RN;i++){const a=i/RN*Math.PI*2;const r=8+c*3+Math.random()*2;rPos[i*3]=Math.cos(a)*r;rPos[i*3+1]=(Math.random()-0.5)*1.5;rPos[i*3+2]=Math.sin(a)*r;}
+  rGeo.setAttribute('position',new THREE.BufferAttribute(rPos,3));
+  const col=[0xffddcc,0xddffcc,0xccddff,0xffccdd,0xffffcc][c];
+  const rM=new THREE.PointsMaterial({color:col,size:0.15,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false});
+  const ring=new THREE.Points(rGeo,rM);ring.rotation.x=Math.random()*Math.PI;ring.rotation.y=Math.random()*Math.PI;
+  S.add(ring);rings.push({mesh:ring,speed:0.1+c*0.05});
+}
+
+let progress=0;
+function onWheel(e){e.preventDefault();progress+=e.deltaY*0.0002;progress=Math.max(0,Math.min(1,progress));}
+window.addEventListener('wheel',onWheel,{passive:false});
+
+function animate(t){requestAnimationFrame(animate);const s=t*0.001,cp=progress||0.001;
+C.position.z=50-cp*45;C.position.y=Math.sin(cp)*3;
+
+// Particles converge toward center
+const op=oGeo.attributes.position.array;
+for(let i=0;i<ON;i++){const tr=1+(cp*8);const cr=oD[i*3]/tr;op[i*3]+=(Math.cos(oD[i*3+1])*Math.sin(oD[i*3+2])*cr-op[i*3])*0.02;op[i*3+1]+=(Math.sin(oD[i*3+1])*Math.sin(oD[i*3+2])*cr-op[i*3+1])*0.02;op[i*3+2]+=(Math.cos(oD[i*3+2])*cr-op[i*3+2])*0.02;}
+oGeo.attributes.position.needsUpdate=true;
+
+// Seed grows
+seed.scale.setScalar(1+cp*8);
+core.intensity=5+cp*80;
+seedMat.opacity=1-cp*0.5;
+
+// Rings rotate
+rings.forEach(r=>{r.mesh.rotation.x+=r.speed*0.01;r.mesh.rotation.y+=r.speed*0.015;});
+
+// Title fade in
+const title=document.getElementById('title');
+if(cp>0.7){title.style.opacity=(cp-0.7)/0.3;title.style.color='rgba(255,255,255,'+(cp-0.7)/0.3+')';}
+
+document.getElementById('hint').style.opacity=progress>0.05?'0':'1';Cp.render();}
+requestAnimationFrame(animate);
+window.addEventListener('resize',()=>{const w=innerWidth,h=innerHeight;C.aspect=w/h;C.updateProjectionMatrix();R.setSize(w,h);Cp.setSize(w,h);});
+</script></body></html>
