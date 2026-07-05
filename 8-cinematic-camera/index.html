@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Act I — The Threshold of Heaven</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;height:100vh;cursor:none;}
+canvas{display:block;}
+#hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:0.1em;transition:opacity 1s ease;}
+#title{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:clamp(18px,3vw,28px);color:rgba(255,255,255,0.5);letter-spacing:0.15em;text-align:center;transition:opacity 2s ease;}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="title">Act I · The Threshold of Heaven</div>
+<div id="hint">scroll slowly →</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// ── Scene ──
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xf8f8fa);
+scene.fog=new THREE.FogExp2(0xf0f0f5,0.00008);
+
+const camera=new THREE.PerspectiveCamera(55,window.innerWidth/window.innerHeight,0.1,800);
+camera.position.set(0,15,200);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.0;
+document.body.appendChild(renderer.domElement);
+
+// ── Post ──
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloom=new UnrealBloomPass(new THREE.Vector2(window.innerWidth,window.innerHeight),0.6,0.2,0.85);
+bloom.threshold=0.7;bloom.strength=0.8;bloom.radius=0.5;
+composer.addPass(bloom);
+
+// ── Lighting ──
+scene.add(new THREE.AmbientLight(0xeeeeff,0.4));
+const sun=new THREE.DirectionalLight(0xfff5e8,15);
+sun.position.set(0,60,-100);
+scene.add(sun);
+// Golden backlight behind arch
+const goldSpot=new THREE.PointLight(0xffcc88,80,200);
+goldSpot.position.set(0,30,-60);
+scene.add(goldSpot);
+
+// ── Ground plane (ripple-ready) ──
+const groundGeo=new THREE.PlaneGeometry(600,600);
+const groundMat=new THREE.ShaderMaterial({
+  uniforms:{
+    uTime:{value:0},
+    uCameraPos:{value:new THREE.Vector2(0,0)},
+    uColor:{value:new THREE.Color(0xf8f8fa)},
+    uRippleColor:{value:new THREE.Color(0xeeeeff)},
+  },
+  vertexShader:/*glsl*/`
+    varying vec2 vUv;varying vec3 vPos;
+    void main(){vUv=uv;vec4 wp=modelMatrix*vec4(position,1.0);vPos=wp.xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}
+  `,
+  fragmentShader:/*glsl*/`
+    uniform float uTime;uniform vec2 uCameraPos;uniform vec3 uColor;uniform vec3 uRippleColor;
+    varying vec2 vUv;varying vec3 vPos;
+    void main(){
+      float dist=length(vPos.xz-uCameraPos);
+      float ripple=sin(dist*0.8-uTime*1.5)*0.5+0.5;
+      ripple*=smoothstep(0.0,30.0,dist)*smoothstep(60.0,30.0,dist)*0.25;
+      float mist=1.0-smoothstep(0.0,200.0,dist)*0.6;
+      vec3 col=mix(uRippleColor,uColor,1.0-ripple*0.3)*mist;
+      gl_FragColor=vec4(col,1.0);
+    }
+  `,
+});
+const ground=new THREE.Mesh(groundGeo,groundMat);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-15;
+scene.add(ground);
+
+// ── Mist particles ──
+const N=3000;
+const mistGeo=new THREE.BufferGeometry();
+const mistPos=new Float32Array(N*3);
+for(let i=0;i<N;i++){
+  mistPos[i*3]=(Math.random()-0.5)*400;
+  mistPos[i*3+1]=Math.random()*60;
+  mistPos[i*3+2]=(Math.random()-0.5)*300;
+}
+mistGeo.setAttribute('position',new THREE.BufferAttribute(mistPos,3));
+const mistMat=new THREE.PointsMaterial({
+  color:0xffffff,size:0.8,transparent:true,opacity:0.25,
+  blending:THREE.NormalBlending,depthWrite:false,
+});
+const mist=new THREE.Points(mistGeo,mistMat);
+scene.add(mist);
+
+// ── Gold light particles ──
+const GN=800;
+const goldGeo=new THREE.BufferGeometry();
+const goldPos=new Float32Array(GN*3);
+for(let i=0;i<GN;i++){
+  goldPos[i*3]=(Math.random()-0.5)*120;
+  goldPos[i*3+1]=20+Math.random()*80;
+  goldPos[i*3+2]=(Math.random()-0.5)*80-60;
+}
+goldGeo.setAttribute('position',new THREE.BufferAttribute(goldPos,3));
+const goldMat=new THREE.PointsMaterial({
+  color:0xffddaa,size:1.5,transparent:true,opacity:0.5,
+  blending:THREE.AdditiveBlending,depthWrite:false,
+});
+const goldParticles=new THREE.Points(goldGeo,goldMat);
+scene.add(goldParticles);
+
+// ── Light rays (cones behind arch) ──
+for(let i=0;i<12;i++){
+  const coneGeo=new THREE.CylinderGeometry(0.3,15+Math.random()*20,60+Math.random()*40,8,1,true);
+  const coneMat=new THREE.MeshBasicMaterial({
+    color:new THREE.Color().setHSL(0.12,0.6,0.5+Math.random()*0.5),
+    transparent:true,opacity:0.06,side:THREE.DoubleSide,depthWrite:false,
+  });
+  const cone=new THREE.Mesh(coneGeo,coneMat);
+  cone.position.set((Math.random()-0.5)*50,30+Math.random()*30,-80+Math.random()*30);
+  const angle=Math.atan2(cone.position.x,cone.position.z)*0.3;
+  cone.rotation.x=Math.PI/2+angle;
+  cone.rotation.z=(Math.random()-0.5)*0.5;
+  scene.add(cone);
+}
+
+// ── Load archway ──
+const loader=new GLTFLoader();
+loader.load('act1-threshold.glb',(gltf)=>{
+  const arch=gltf.scene;
+  arch.scale.set(1.5,1.5,1.5);
+  arch.position.set(0,10,-40);
+  arch.rotation.y=Math.PI;
+  arch.traverse(c=>{if(c.isMesh){c.material=new THREE.MeshStandardMaterial({color:0xf5f0e8,roughness:0.3,metalness:0.05});}});
+  scene.add(arch);
+});
+
+// ── Camera ──
+let progress=0;
+const startZ=200,endZ=-30;
+
+function onWheel(e){
+  e.preventDefault();
+  progress+=e.deltaY*0.0003;
+  progress=Math.max(0,Math.min(1,progress));
+  camera.position.z=startZ+(endZ-startZ)*progress;
+  camera.position.y=15-progress*8; // slowly lower
+  goldSpot.intensity=50+progress*100;
+  document.getElementById('hint').style.opacity=progress>0.05?'0':'1';
+  document.getElementById('title').style.opacity=progress>0.3?'0':'1';
+}
+window.addEventListener('wheel',onWheel,{passive:false});
+
+// Touch
+let ty=0;
+window.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;});
+window.addEventListener('touchmove',e=>{
+  const dy=ty-e.touches[0].clientY;
+  ty=e.touches[0].clientY;
+  progress+=dy*0.0003;
+  progress=Math.max(0,Math.min(1,progress));
+  camera.position.z=startZ+(endZ-startZ)*progress;
+  camera.position.y=15-progress*8;
+});
+
+// ── Animate ──
+function animate(t){
+  requestAnimationFrame(animate);
+  const s=t*0.001;
+  camera.lookAt(0,10,-40);
+
+  // Ground ripples follow camera
+  groundMat.uniforms.uTime.value=s;
+  groundMat.uniforms.uCameraPos.value.set(camera.position.x,camera.position.z);
+
+  // Mist drift
+  const mp=mistGeo.attributes.position.array;
+  for(let i=0;i<N;i++){mp[i*3]+=Math.sin(s+i*0.01)*0.02;mp[i*3+1]+=Math.cos(s*0.3+i*0.005)*0.01;}
+  mistGeo.attributes.position.needsUpdate=true;
+
+  // Gold particles float upward
+  const gp=goldGeo.attributes.position.array;
+  for(let i=0;i<GN;i++){gp[i*3+1]+=0.03;gp[i*3]+=Math.sin(s+i*0.02)*0.02;if(gp[i*3+1]>100)gp[i*3+1]=20;}
+  goldGeo.attributes.position.needsUpdate=true;
+
+  // Auto drift when not scrolling
+  if(progress<0.01){camera.position.x=Math.sin(s*0.15)*8;}
+
+  composer.render();
+}
+requestAnimationFrame(animate);
+
+window.addEventListener('resize',()=>{
+  const w=window.innerWidth,h=window.innerHeight;
+  camera.aspect=w/h;camera.updateProjectionMatrix();
+  renderer.setSize(w,h);composer.setSize(w,h);
+});
+</script>
+</body>
+</html>
