@@ -91,14 +91,14 @@ function makeUnopt(scene){
     pos[i*3]=Math.cos(th)*Math.sin(ph)*r;pos[i*3+1]=Math.sin(th)*Math.sin(ph)*r*0.5;pos[i*3+2]=Math.cos(ph)*r;
   }
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const mat=new THREE.PointsMaterial({color:0xff8866,size:0.18,map:gt,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
+  const mat=new THREE.PointsMaterial({color:0xc8c4c0,size:0.18,map:gt,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
   const pts=new THREE.Points(geo,mat);scene.add(pts);
   return{geo,pos,pts};
 }
 
 function updUnopt(d,t){
   const p=d.pos;
-  for(let i=0;i<COUNT;i++){const i3=i*3;p[i3]+=Math.sin(t+i*0.01)*0.006;p[i3+1]+=Math.cos(t+i*0.01)*0.004;p[i3+2]+=Math.sin(t+i*0.015)*0.005;}
+  for(let i=0;i<COUNT;i++){const i3=i*3;p[i3]+=Math.sin(t+i*0.01)*0.003;p[i3+1]+=Math.cos(t+i*0.01)*0.002;p[i3+2]+=Math.sin(t+i*0.015)*0.0025;}
   d.geo.attributes.position.needsUpdate=true;
 }
 
@@ -112,14 +112,14 @@ function makeOpt(scene){
     pos[i*3]=base[i*3]=Math.cos(th)*Math.sin(ph)*r;pos[i*3+1]=base[i*3+1]=Math.sin(th)*Math.sin(ph)*r*0.5;pos[i*3+2]=base[i*3+2]=Math.cos(ph)*r;
   }
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const mat=new THREE.PointsMaterial({color:0x66bbff,size:0.18,map:gt,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
+  const mat=new THREE.PointsMaterial({color:0xc8c4c0,size:0.18,map:gt,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
   const pts=new THREE.Points(geo,mat);scene.add(pts);
   return{geo,pos,base};
 }
 
 function updOpt(d,t){
   const p=d.pos,b=d.base,o=PC,l=COUNT;
-  for(let i=0;i<l;i++){const i3=i*3;p[i3]=b[i3]+Math.sin(t+o[i3])*0.06;p[i3+1]=b[i3+1]+Math.cos(t+o[i3+1])*0.04;p[i3+2]=b[i3+2]+Math.sin(t+o[i3+2])*0.05;}
+  for(let i=0;i<l;i++){const i3=i*3;p[i3]=b[i3]+Math.sin(t+o[i3])*0.003;p[i3+1]=b[i3+1]+Math.cos(t+o[i3+1])*0.002;p[i3+2]=b[i3+2]+Math.sin(t+o[i3+2])*0.0025;}
   d.geo.attributes.position.needsUpdate=true;
 }
 
