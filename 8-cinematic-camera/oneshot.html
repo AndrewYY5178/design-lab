@@ -117,56 +117,37 @@ function terrainY(x,z){
   return Math.sin(x*0.02)*3+Math.cos(z*0.03)*2+Math.sin((x+z)*0.015)*4;
 }
 
-// Place models — dense, cinematic
-// 🐋 WHALES — 10 along camera path near Act II zone (z:70-90, x:-40 to 60)
+// ── INSTANCED MESH helper ──
+const dummy=new THREE.Object3D();
+function createInstanced(model,count,placeFn){
+  const meshes=[];model.traverse(c=>{if(c.isMesh)meshes.push(c);});
+  if(meshes.length===0)return;
+  const instances=meshes.map(m=>{
+    const geo=m.geometry.clone();const mat=m.material.clone();
+    const im=new THREE.InstancedMesh(geo,mat,count);im.castShadow=false;im.receiveShadow=false;
+    scene.add(im);return im;
+  });
+  for(let i=0;i<count;i++){placeFn(dummy,i);dummy.updateMatrix();instances.forEach(im=>im.setMatrixAt(i,dummy.matrix));}
+  instances.forEach(im=>im.instanceMatrix.needsUpdate=true);
+  return instances;
+}
+
+// Place models
 loadModel('whale',m=>{
-  const whaleX=[-40,-20,0,20,40,55,30,10,-10,-35];
-  const whaleZ=[75,80,72,78,85,82,76,74,79,83];
-  for(let i=0;i<10;i++){
-    const c=m.clone();c.position.set(whaleX[i],22+Math.sin(i*1.5)*8,whaleZ[i]);
-    c.scale.setScalar(18+Math.random()*12);c.rotation.set(0,Math.random()*Math.PI*2,Math.random()*0.2);scene.add(c);
-  }
+  const pts=[[-40,75],[-20,80],[0,72],[20,78],[40,85],[55,82],[30,76],[10,74],[-10,79],[-35,83]];
+  pts.forEach(([x,z],i)=>{const c=m.clone();c.position.set(x,22+Math.sin(i)*8,z);c.scale.setScalar(18+Math.random()*12);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);});
 });
-// 🌻 SUNFLOWERS — 700, rolling field near Act III (z:5-35), deer-free zone x:0-50
-loadModel('sunflower',m=>{
-  for(let i=0;i<700;i++){
-    const c=m.clone();const x=5+Math.random()*55;const z=8+Math.random()*30;
-    c.position.set(x,terrainY(x,z)-1,z);c.scale.setScalar(2.5+Math.random()*4);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);
-  }
-});
-// 🦌 DEER — 20, higher ground, opposite side from sunflowers (x:-40 to 0)
+loadModel('sunflower',m=>{createInstanced(m,700,(d,i)=>{const x=5+Math.random()*55;const z=8+Math.random()*30;d.position.set(x,terrainY(x,z)-1,z);d.scale.setScalar(2.5+Math.random()*4);d.rotation.set(0,Math.random()*Math.PI*2,0);d.updateMatrix();});});
 loadModel('deer',m=>{
-  for(let i=0;i<20;i++){
-    const c=m.clone();const x=-35+Math.random()*35;const z=10+Math.random()*25;
-    c.position.set(x,terrainY(x,z),z);c.scale.setScalar(8+Math.random()*6);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);
-  }
+  for(let i=0;i<20;i++){const c=m.clone();const x=-35+Math.random()*35;const z=10+Math.random()*25;c.position.set(x,terrainY(x,z),z);c.scale.setScalar(8+Math.random()*6);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
 });
-// 💎 CRYSTALS — 500, forest zone Act IV (z:-50 to -20), tall varied heights
-loadModel('crystal',m=>{
-  for(let i=0;i<500;i++){
-    const c=m.clone();const x=-30+(Math.random()-0.5)*70;const z=-45+(Math.random()-0.5)*50;
-    c.position.set(x,terrainY(x,z)-Math.random()*3,z);c.scale.setScalar(1+Math.random()*4);c.rotation.set(Math.random()*0.5,Math.random()*Math.PI*2,Math.random()*0.5);scene.add(c);
-  }
-});
-// 🎹 PIANO
+loadModel('crystal',m=>{createInstanced(m,500,(d,i)=>{const x=-30+(Math.random()-0.5)*70;const z=-45+(Math.random()-0.5)*50;d.position.set(x,terrainY(x,z)-Math.random()*3,z);d.scale.setScalar(1+Math.random()*4);d.rotation.set(Math.random()*0.5,Math.random()*Math.PI*2,Math.random()*0.5);d.updateMatrix();});});
 loadModel('piano',m=>{m.position.set(-60,3,-60);m.scale.setScalar(15);});
-// 🌸 TULIPS — 700, moon garden Act VI (z:-120 to -90)
-loadModel('tulip',m=>{
-  for(let i=0;i<700;i++){
-    const c=m.clone();const x=-40+(Math.random()-0.5)*80;const z=-115+(Math.random()-0.5)*35;
-    c.position.set(x,terrainY(x,z)-1,z);c.scale.setScalar(2+Math.random()*4);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);
-  }
-});
-// 🐚 SHELLS — 30 floating in air
+loadModel('tulip',m=>{createInstanced(m,700,(d,i)=>{const x=-40+(Math.random()-0.5)*80;const z=-115+(Math.random()-0.5)*35;d.position.set(x,terrainY(x,z)-1,z);d.scale.setScalar(2+Math.random()*4);d.rotation.set(0,Math.random()*Math.PI*2,0);d.updateMatrix();});});
 loadModel('shell',m=>{
-  for(let i=0;i<30;i++){
-    const c=m.clone();c.position.set(-35+(Math.random()-0.5)*50,3+Math.random()*12,-100+(Math.random()-0.5)*35);
-    c.scale.setScalar(2+Math.random()*4);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);
-  }
+  for(let i=0;i<30;i++){const c=m.clone();c.position.set(-35+(Math.random()-0.5)*50,3+Math.random()*12,-100+(Math.random()-0.5)*35);c.scale.setScalar(2+Math.random()*4);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
 });
-// 🪨 CLIFF
 loadModel('cliff',m=>{m.position.set(60,8,-180);m.scale.setScalar(18);});
-// 🌱 SEED
 loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.setScalar(15);});
 
 // ── ANDREAM Morph Particles — million-level, volumetric, close-range ──
