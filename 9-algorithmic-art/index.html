@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AndDream — Algorithmic Art</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0c;overflow:hidden;height:100vh;font-family:'Playfair Display',serif;}
+canvas{display:block;position:fixed;inset:0;z-index:0;}
+#panel{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:32px;align-items:center;background:rgba(20,20,28,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:14px 28px;border-radius:28px;border:1px solid rgba(255,255,255,0.06);}
+#panel .group{display:flex;flex-direction:column;align-items:center;gap:2px;}
+#panel label{font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;}
+#panel input[type=range]{-webkit-appearance:none;width:80px;height:2px;background:rgba(255,255,255,0.15);border-radius:1px;outline:none;cursor:pointer;}
+#panel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#c8b8a0;cursor:pointer;}
+#panel .val{font-size:10px;color:rgba(255,255,255,0.5);font-variant-numeric:tabular-nums;}
+#panel .seed-btn{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:10px;letter-spacing:0.08em;font-family:inherit;transition:all 0.3s ease;}
+#panel .seed-btn:hover{border-color:rgba(255,255,255,0.4);color:#fff;}
+#title{position:fixed;top:40px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:0.15em;}
+@media(max-width:600px){#panel{gap:16px;padding:10px 16px;border-radius:20px;}#panel input[type=range]{width:50px;}}
+</style>
+</head>
+<body>
+<div id="title">ALGORITHMIC ART · ANDREAM</div>
+<canvas id="c"></canvas>
+<div id="panel">
+  <div class="group"><label>Density</label><input type="range" id="density" min="1" max="10" value="5"><div class="val" id="dVal">5</div></div>
+  <div class="group"><label>Speed</label><input type="range" id="speed" min="1" max="10" value="4"><div class="val" id="sVal">4</div></div>
+  <div class="group"><label>Hue</label><input type="range" id="hue" min="0" max="360" value="35"><div class="val" id="hVal">35</div></div>
+  <button class="seed-btn" id="seedBtn">SEED 42</button>
+</div>
+
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+let W,H,seed=42;
+
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;}
+window.addEventListener('resize',resize);resize();
+
+// ── PRNG ──
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let rand;
+
+// ── Noise ──
+const perm=new Uint8Array(512);
+function seedNoise(s){for(let i=0;i<256;i++)perm[i]=i;for(let i=255;i>0;i--){const j=(s*9301+49297)%(i+1);[perm[i],perm[j]]=[perm[j],perm[i]];s=(s*4721+8719)%233280;}for(let i=0;i<256;i++)perm[i+256]=perm[i];}
+function noise2D(x,y){const X=Math.floor(x)&255,Y=Math.floor(y)&255;x-=Math.floor(x);y-=Math.floor(y);const u=x*x*x*(x*(x*6-15)+10),v=y*y*y*(y*(y*6-15)+10);const A=perm[X]+Y,B=perm[X+1]+Y;const a=perm[A],b=perm[B],c=perm[A+1],d=perm[B+1];return a+(b-a)*u+((c+(d-c)*u)-a)*v;}
+
+// ── Particles ──
+class Particle{
+  constructor(){this.reset();}
+  reset(){this.x=rand()*W;this.y=rand()*H;this.age=0;this.maxAge=200+rand()*400;this.vx=0;this.vy=0;this.trail=[];}
+  update(density,speed,hue,t){
+    const n=noise2D(this.x*0.003,this.y*0.003+t*0.02);
+    const angle=n*Math.PI*8;
+    const force=0.3+speed*0.1;
+    this.vx+=Math.cos(angle)*force*0.1;this.vy+=Math.sin(angle)*force*0.1;
+    this.vx*=0.92;this.vy*=0.92;
+    this.x+=this.vx;this.y+=this.vy;
+    this.trail.push({x:this.x,y:this.y,life:1});
+    if(this.trail.length>15)this.trail.shift();
+    this.age++;
+    if(this.age>this.maxAge||this.x<0||this.x>W||this.y<0||this.y>H)this.reset();
+    const a=1-this.age/this.maxAge;
+    ctx.strokeStyle=`hsla(${hue+rand()*30},${40+rand()*30}%,${50+a*30}%,${a*0.15})`;
+    ctx.lineWidth=0.5+rand()*0.8;
+    if(this.trail.length>1){ctx.beginPath();ctx.moveTo(this.trail[0].x,this.trail[0].y);for(let i=1;i<this.trail.length;i++)ctx.lineTo(this.trail[i].x,this.trail[i].y);ctx.stroke();}
+  }
+}
+
+// ── Fractal tree ──
+function drawBranch(x,y,len,angle,depth,hue){
+  if(depth<=0||len<3)return;
+  const ex=x+Math.cos(angle)*len,ey=y+Math.sin(angle)*len;
+  const alpha=0.08+depth*0.02;
+  ctx.strokeStyle=`hsla(${hue+20},30%,${60+depth*5}%,${alpha})`;
+  ctx.lineWidth=depth*0.4;
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(ex,ey);ctx.stroke();
+  drawBranch(ex,ey,len*0.72,angle-0.5, depth-1,hue);
+  drawBranch(ex,ey,len*0.68,angle+0.4, depth-1,hue);
+  if(rand()>0.7)drawBranch(ex,ey,len*0.5,angle+rand()*0.8-0.4,depth-2,hue);
+}
+
+// ── Text guide ──
+function drawTextMask(t,hue){
+  ctx.save();
+  ctx.font='900 120px "Playfair Display",serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle=`hsla(${hue},50%,80%,0.03)`;
+  ctx.fillText('ANDREAM',W/2,H/2);
+  // Subtle glow
+  ctx.shadowColor=`hsla(${hue},60%,70%,0.08)`;
+  ctx.shadowBlur=60;
+  ctx.fillText('ANDREAM',W/2,H/2);
+  ctx.restore();
+}
+
+// ── Main ──
+const particles=[];
+let t=0,hueVal=35,speedVal=4,densityVal=5;
+
+function resetAll(){
+  rand=mulberry32(seed);seedNoise(seed);
+  particles.length=0;
+  const count=200+densityVal*80;
+  for(let i=0;i<count;i++){const p=new Particle();p.age=rand()*p.maxAge;particles.push(p);}
+}
+
+document.getElementById('density').oninput=function(){densityVal=+this.value;document.getElementById('dVal').textContent=this.value;resetAll();};
+document.getElementById('speed').oninput=function(){speedVal=+this.value;document.getElementById('sVal').textContent=this.value;};
+document.getElementById('hue').oninput=function(){hueVal=+this.value;document.getElementById('hVal').textContent=this.value;};
+document.getElementById('seedBtn').onclick=function(){seed=Math.floor(Math.random()*99999);this.textContent=`SEED ${seed}`;resetAll();};
+
+resetAll();
+
+function draw(timestamp){
+  requestAnimationFrame(draw);
+  t=timestamp*0.001;
+  // Fade
+  ctx.fillStyle='rgba(10,10,12,0.08)';ctx.fillRect(0,0,W,H);
+
+  // Text mask
+  drawTextMask(t,hueVal);
+
+  // Fractal trees at edges
+  const trees=[{x:W*0.15,y:H*0.8,a:-Math.PI/2.2},{x:W*0.85,y:H*0.75,a:-Math.PI/1.8},{x:W*0.5,y:H*0.2,a:Math.PI/2.5}];
+  trees.forEach(tr=>drawBranch(tr.x,tr.y,40+Math.sin(t*0.3)*15,tr.a+Math.sin(t*0.2)*0.2,6,hueVal));
+
+  // Particles
+  particles.forEach(p=>p.update(densityVal,speedVal,hueVal,t));
+}
+requestAnimationFrame(draw);
+
+// ── Drift params slowly ──
+setInterval(()=>{
+  const hSlider=document.getElementById('hue');
+  let h=parseInt(hSlider.value);h=(h+1)%360;hSlider.value=h;document.getElementById('hVal').textContent=h;hueVal=h;
+},3000);
+</script>
+</body>
+</html>
