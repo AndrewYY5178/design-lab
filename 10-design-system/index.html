@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AndDream · Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;400;700&family=Fredoka:wght@400;600&family=Quicksand:wght@400;600&family=Nunito:wght@400;700;900&family=Inter:opsz,wght@14..32,100..900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+/* ── This page IS the design system — brand-driven ── */
+:root{
+  --paper:#FAFAF8;--ink:#111;--ink-light:#3A3A3A;--rule:#1A1A1A;
+  --indigo:#254E7A;--indigo-dim:#4A78B0;
+  --accent-dim:rgba(0,0,0,0.04);
+  --font-heading:'Playfair Display',serif;--font-body:'Crimson Pro','Noto Serif SC',serif;--font-mono:monospace;
+  --space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:32px;--space-xl:64px;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:16px;
+  --shadow-card:0 2px 12px rgba(0,0,0,0.06);--shadow-hover:0 4px 20px rgba(0,0,0,0.1);
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;line-height:1.7;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.02;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:128px 128px;}
+
+/* ── Layout ── */
+.container{max-width:1000px;margin:0 auto;padding:80px 24px 120px;}
+h1{font-family:var(--font-heading);font-size:clamp(40px,6vw,64px);font-weight:900;letter-spacing:0.08em;margin-bottom:8px;}
+h2{font-family:var(--font-heading);font-size:clamp(24px,3vw,36px);font-weight:700;letter-spacing:0.04em;margin:56px 0 20px;padding-bottom:12px;border-bottom:1px solid var(--rule);}
+h3{font-family:var(--font-heading);font-size:20px;font-weight:700;margin:28px 0 12px;color:var(--indigo);}
+h4{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin:20px 0 8px;}
+p{margin-bottom:12px;}
+
+/* ── Color Swatches ── */
+.swatches{display:flex;flex-wrap:wrap;gap:16px;margin:16px 0;}
+.swatch{width:100px;text-align:center;}
+.swatch .chip{width:80px;height:80px;border-radius:var(--radius-md);border:1px solid rgba(0,0,0,0.08);margin:0 auto 8px;box-shadow:var(--shadow-card);}
+.swatch .label{font-size:12px;color:var(--ink-light);}
+.swatch .hex{font-size:11px;font-family:var(--font-mono);color:var(--ink-light);opacity:0.7;}
+.swatch.primary .chip{border:2px solid var(--indigo);}
+
+/* ── Type specimen ── */
+.specimen{padding:24px;background:var(--accent-dim);border-radius:var(--radius-md);margin:12px 0;border-left:3px solid var(--indigo);}
+.specimen .big{font-size:48px;font-weight:900;letter-spacing:0.04em;}
+.specimen .body-en{font-size:18px;line-height:1.8;margin-top:12px;}
+.specimen .body-zh{font-size:16px;line-height:2;margin-top:8px;opacity:0.7;}
+
+/* ── Component previews ── */
+.preview-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:12px 0;}
+.btn{display:inline-block;padding:10px 24px;border-radius:var(--radius-sm);font-family:var(--font-heading);font-size:14px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.3s ease;border:none;}
+.btn-primary{background:var(--ink);color:var(--paper);}
+.btn-primary:hover{background:var(--indigo);}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--rule);}
+.btn-ghost:hover{border-color:var(--indigo);color:var(--indigo);}
+.btn-small{padding:6px 16px;font-size:12px;}
+
+.card{border:1px solid rgba(0,0,0,0.08);border-radius:var(--radius-lg);padding:24px;background:var(--paper);box-shadow:var(--shadow-card);max-width:320px;}
+.card:hover{border-color:var(--indigo);box-shadow:var(--shadow-hover);}
+.card h3{margin-top:0;}
+
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.04em;}
+.tag-default{background:var(--accent-dim);color:var(--ink-light);}
+.tag-accent{background:rgba(37,78,122,0.1);color:var(--indigo);}
+
+.input{display:block;width:100%;max-width:300px;padding:10px 14px;border:1px solid rgba(0,0,0,0.15);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:14px;background:var(--paper);transition:border-color 0.3s ease;}
+.input:focus{outline:none;border-color:var(--indigo);}
+
+/* ── ClouDo section ── */
+.cloudo-section{background:rgba(37,78,122,0.04);border-radius:var(--radius-lg);padding:32px;margin:40px 0;}
+.cloudo-section h2{border-bottom-color:rgba(37,78,122,0.2);}
+
+/* ── Code block ── */
+.code{font-family:var(--font-mono);font-size:12px;background:rgba(0,0,0,0.03);padding:16px;border-radius:var(--radius-sm);overflow-x:auto;line-height:1.6;white-space:pre-wrap;margin:8px 0;}
+
+/* ── Footer ── */
+footer{text-align:center;padding:60px 24px;border-top:1px solid rgba(0,0,0,0.06);font-size:13px;color:var(--ink-light);}
+footer a{color:var(--indigo);}
+
+@media(max-width:600px){.swatch{width:70px;}.swatch .chip{width:56px;height:56px;}.preview-row{flex-direction:column;align-items:flex-start;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>AndDream<br>Design System</h1>
+<p style="font-size:18px;color:var(--ink-light);max-width:600px;">Brand design tokens, typography, color palettes, and component specifications. Built from 16 real-world implementations across 14 design experiments.</p>
+
+<!-- ═══════════ COLORS ═══════════ -->
+<h2>Color Tokens</h2>
+<h3>Primary — Engraving Palette</h3>
+<div class="swatches">
+  <div class="swatch"><div class="chip" style="background:#FAFAF8"></div><div class="label">Paper</div><div class="hex">#FAFAF8</div></div>
+  <div class="swatch"><div class="chip" style="background:#111111"></div><div class="label">Ink</div><div class="hex">#111111</div></div>
+  <div class="swatch"><div class="chip" style="background:#3A3A3A"></div><div class="label">Ink Light</div><div class="hex">#3A3A3A</div></div>
+  <div class="swatch"><div class="chip" style="background:#1A1A1A"></div><div class="label">Rule</div><div class="hex">#1A1A1A</div></div>
+</div>
+
+<h3>Accent — Indigo Margin</h3>
+<div class="swatches">
+  <div class="swatch primary"><div class="chip" style="background:#254E7A"></div><div class="label">Indigo ★</div><div class="hex">#254E7A</div></div>
+  <div class="swatch"><div class="chip" style="background:#4A78B0"></div><div class="label">Indigo Dim</div><div class="hex">#4A78B0</div></div>
+  <div class="swatch"><div class="chip" style="background:#6BA0D6"></div><div class="label">Sky Blue</div><div class="hex">#6BA0D6</div><div class="hex">(Dark mode)</div></div>
+</div>
+
+<h3>Experimental Palettes (from Design Lab)</h3>
+<div class="swatches">
+  <div class="swatch"><div class="chip" style="background:#E8E0D5"></div><div class="label">Sketchbook</div><div class="hex">Warm kraft</div></div>
+  <div class="swatch"><div class="chip" style="background:#7BCBD6;color:#00788B;display:flex;align-items:center;justify-content:center;font-size:10px;">Text</div><div class="label">Kinetic V2</div><div class="hex">Cyan + Teal</div></div>
+  <div class="swatch"><div class="chip" style="background:#39393A;color:#81C048;display:flex;align-items:center;justify-content:center;font-size:10px;">Text</div><div class="label">Playful</div><div class="hex">Dark + Lime</div></div>
+  <div class="swatch"><div class="chip" style="background:#0A0A0C;color:#B8B0E8;display:flex;align-items:center;justify-content:center;font-size:10px;">Text</div><div class="label">Design Lab</div><div class="hex">Deep + Lavender</div></div>
+  <div class="swatch"><div class="chip" style="background:#F9E39D;color:#5C6E42;display:flex;align-items:center;justify-content:center;font-size:10px;">Text</div><div class="label">GenUI</div><div class="hex">Gold + Olive</div></div>
+</div>
+
+<!-- ═══════════ TYPOGRAPHY ═══════════ -->
+<h2>Typography</h2>
+<h3>Brand Line — Full Serif Stack</h3>
+<div class="specimen">
+  <div class="big" style="font-family:'Playfair Display',serif">ANDREAM</div>
+  <p style="font-size:13px;color:var(--ink-light);margin-top:8px;">Playfair Display · 900 · 48px · letter-spacing 0.04em</p>
+</div>
+<div class="specimen" style="border-left-color:var(--indigo-dim);">
+  <div class="body-en">AndDream is a name born from Andrew, yet it reaches far beyond. It begins with "And" — the very first sound of my name, yet it carries a deeper meaning: a word of connection, continuation, and endless possibilities.</div>
+  <p style="font-size:13px;color:var(--ink-light);margin-top:8px;">Crimson Pro · 400 · 18px · line-height 1.8</p>
+</div>
+<div class="specimen" style="border-left-color:rgba(0,0,0,0.2);">
+  <div class="body-zh">AndDream 这个名字源于 Andrew，也超越了 Andrew。它这个名字代表的不只是一个人的梦想，而是一种未完待续的姿态。</div>
+  <p style="font-size:13px;color:var(--ink-light);margin-top:8px;">Noto Serif SC · 300 · 16px · line-height 2</p>
+</div>
+
+<h3>Experimental Fonts (non-serif branches)</h3>
+<div class="swatches" style="gap:12px;">
+  <div class="swatch" style="width:auto;"><div class="chip" style="width:auto;height:auto;padding:16px 20px;font-family:'Inter',sans-serif;font-weight:700;font-size:18px;">Inter VF</div><div class="label">Variable wght 100–900</div></div>
+  <div class="swatch" style="width:auto;"><div class="chip" style="width:auto;height:auto;padding:16px 20px;font-family:'Nunito',sans-serif;font-weight:900;font-size:18px;">Nunito</div><div class="label">Rounded sans</div></div>
+  <div class="swatch" style="width:auto;"><div class="chip" style="width:auto;height:auto;padding:16px 20px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:18px;">Fredoka</div><div class="label">ClouDo headings</div></div>
+  <div class="swatch" style="width:auto;"><div class="chip" style="width:auto;height:auto;padding:16px 20px;font-family:'Quicksand',sans-serif;font-weight:600;font-size:18px;">Quicksand</div><div class="label">ClouDo body</div></div>
+</div>
+
+<!-- ═══════════ COMPONENTS ═══════════ -->
+<h2>Components</h2>
+
+<h3>Buttons</h3>
+<div class="preview-row">
+  <button class="btn btn-primary">Primary</button>
+  <button class="btn btn-ghost">Ghost</button>
+  <button class="btn btn-primary btn-small">Small</button>
+  <span class="tag tag-accent">Tag</span>
+  <span class="tag tag-default">Default</span>
+</div>
+<h4>Usage</h4>
+<div class="code">/* Primary — solid ink */
+.btn-primary { background: var(--ink); color: var(--paper); }
+.btn-primary:hover { background: var(--indigo); }
+
+/* Ghost — outline, color-shifts on hover */
+.btn-ghost { background: transparent; border: 1px solid var(--rule); }
+.btn-ghost:hover { border-color: var(--indigo); color: var(--indigo); }</div>
+
+<h3>Cards</h3>
+<div class="preview-row">
+  <div class="card"><h3>Card Title</h3><p style="font-size:14px;color:var(--ink-light);">Body text sits here. The card lifts on hover with a subtle shadow and indigo border.</p></div>
+</div>
+<h4>Spec</h4>
+<div class="code">.card { border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.card:hover { border-color: var(--indigo); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }</div>
+
+<h3>Input</h3>
+<div class="preview-row"><input class="input" type="text" placeholder="Type something..."></div>
+
+<!-- ═══════════ SPACING ═══════════ -->
+<h2>Spacing Scale</h2>
+<div class="code">--space-xs:  4px   /* micro: icon padding */
+--space-sm:  8px   /* tight: inline gap */
+--space-md: 16px   /* base: paragraph gap */
+--space-lg: 32px   /* section: card margin */
+--space-xl: 64px   /* page: hero padding */</div>
+
+<!-- ═══════════ CLOUDO ═══════════ -->
+<div class="cloudo-section">
+<h2>ClouDo · Sub-brand Tokens</h2>
+<p style="color:var(--ink-light);">ClouDo is the productivity/wellness sub-brand. Softer, warmer, rounder than AndDream.</p>
+<h3>Color</h3>
+<div class="swatches">
+  <div class="swatch"><div class="chip" style="background:#FFE4E1"></div><div class="label">Pink</div></div>
+  <div class="swatch"><div class="chip" style="background:#FFF8DC"></div><div class="label">Yellow</div></div>
+  <div class="swatch"><div class="chip" style="background:#E8F4FD"></div><div class="label">Blue</div></div>
+</div>
+<h3>Typography</h3>
+<div class="specimen" style="border-left-color:#FFE4E1;">
+  <div class="big" style="font-family:'Fredoka',sans-serif;font-size:36px;">ClouDo</div>
+  <p style="font-size:13px;color:var(--ink-light);">Fredoka · 600 · Rounded sans-serif for headings</p>
+  <div class="body-en" style="font-family:'Quicksand',sans-serif;font-weight:400;font-size:16px;margin-top:12px;">Turn laziness into lightness. One small cloud at a time.</div>
+  <p style="font-size:13px;color:var(--ink-light);margin-top:8px;">Quicksand · 400 · Rounded sans-serif for body</p>
+</div>
+</div>
+
+<!-- ═══════════ DESIGN PRINCIPLES ═══════════ -->
+<h2>Design Principles</h2>
+<table style="width:100%;border-collapse:collapse;font-size:14px;">
+<tr style="border-bottom:1px solid rgba(0,0,0,0.08);"><td style="padding:12px 8px;font-weight:700;">✅ Do</td><td style="padding:12px 8px;color:var(--ink-light);">❌ Don't</td></tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,0.04);"><td style="padding:12px 8px;">Full-serif stack for brand pages</td><td style="padding:12px 8px;color:var(--ink-light);">Sans-serif for main brand headings</td></tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,0.04);"><td style="padding:12px 8px;">B&W as bone structure + 1 accent color</td><td style="padding:12px 8px;color:var(--ink-light);">Purple gradients, neon palettes</td></tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,0.04);"><td style="padding:12px 8px;">Noise texture overlay on dark backgrounds</td><td style="padding:12px 8px;color:var(--ink-light);">Pure flat colors without texture</td></tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,0.04);"><td style="padding:12px 8px;">Hover → indigo shift (≥ 0.5s transition)</td><td style="padding:12px 8px;color:var(--ink-light);">Instant color changes, aggressive animations</td></tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,0.04);"><td style="padding:12px 8px;">Single-file HTML, zero npm dependencies</td><td style="padding:12px 8px;color:var(--ink-light);">React/Vue frameworks for brand pages</td></tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,0.04);"><td style="padding:12px 8px;">Particles as narrative (9 forms: dream/walk/flow...)</td><td style="padding:12px 8px;color:var(--ink-light);">Decorative particles without meaning</td></tr>
+</table>
+
+<!-- ═══════════ CSS TOKENS ═══════════ -->
+<h2>Design Tokens (copy-paste ready)</h2>
+<div class="code">/* AndDream · Design Tokens v1.0 */
+:root {
+  /* Colors — Engraving */
+  --color-paper:      #FAFAF8;
+  --color-ink:        #111111;
+  --color-ink-light:  #3A3A3A;
+  --color-rule:       #1A1A1A;
+  --color-indigo:     #254E7A;
+  --color-indigo-dim: #4A78B0;
+  --color-accent-dim: rgba(0,0,0,0.04);
+
+  /* Typography */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Crimson Pro', 'Noto Serif SC', serif;
+  --font-mono: monospace;
+
+  /* Spacing */
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px;
+  --space-lg: 32px; --space-xl: 64px;
+
+  /* Radii */
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 16px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-hover: 0 4px 20px rgba(0,0,0,0.1);
+}</div>
+
+</div>
+<footer>AndDream Design System · v1.0 · <a href="https://github.com/AndrewYY5178/design-lab">GitHub</a></footer>
+</body>
+</html>
