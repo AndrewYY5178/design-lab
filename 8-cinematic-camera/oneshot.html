@@ -114,28 +114,28 @@ function loadModel(name,onLoad){
   },undefined,()=>{el.textContent=`${name} ✗ failed`;loadedCount++;loadFill.style.width=(loadedCount/totalModels*100)+'%';});
 }
 
-// Place models — MASSIVE scale + dense placement
+// Place models — balanced scale, good density
 loadModel('whale',m=>{
-  for(let i=0;i<8;i++){const c=m.clone();c.position.set(20+(Math.random()-0.5)*120,20+(Math.random()-0.5)*60,60+(Math.random()-0.5)*50);c.scale.set(500,500,500);c.rotation.set(0,Math.random()*Math.PI*2,Math.random()*0.3);scene.add(c);}
+  for(let i=0;i<5;i++){const c=m.clone();c.position.set(25+(Math.random()-0.5)*100,20+(Math.random()-0.5)*50,65+(Math.random()-0.5)*40);c.scale.setScalar(8+Math.random()*6);c.rotation.set(0,Math.random()*Math.PI*2,Math.random()*0.2);scene.add(c);}
 });
 loadModel('sunflower',m=>{
-  for(let i=0;i<50;i++){const c=m.clone();c.position.set(10+(Math.random()-0.5)*100,-2,0+(Math.random()-0.5)*50);c.scale.set(300,300,300);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
+  for(let i=0;i<30;i++){const c=m.clone();c.position.set(10+(Math.random()-0.5)*70,-2,0+(Math.random()-0.5)*30);c.scale.setScalar(2+Math.random()*4);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
 });
 loadModel('deer',m=>{
-  for(let i=0;i<3;i++){const c=m.clone();c.position.set(30+(Math.random()-0.5)*40,0,10+(Math.random()-0.5)*20);c.scale.set(400,400,400);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
+  for(let i=0;i<3;i++){const c=m.clone();c.position.set(30+(Math.random()-0.5)*35,0,10+(Math.random()-0.5)*15);c.scale.setScalar(4+Math.random()*3);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
 });
 loadModel('crystal',m=>{
-  for(let i=0;i<30;i++){const c=m.clone();c.position.set(-30+(Math.random()-0.5)*80,0,-40+(Math.random()-0.5)*50);c.scale.set(250+Math.random()*350,250+Math.random()*350,250+Math.random()*350);c.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);scene.add(c);}
+  for(let i=0;i<18;i++){const c=m.clone();c.position.set(-30+(Math.random()-0.5)*50,0,-40+(Math.random()-0.5)*35);c.scale.setScalar(2+Math.random()*4);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
 });
-loadModel('piano',m=>{m.position.set(-60,5,-60);m.scale.set(600,600,600);});
+loadModel('piano',m=>{m.position.set(-60,2,-60);m.scale.setScalar(6);});
 loadModel('tulip',m=>{
-  for(let i=0;i<40;i++){const c=m.clone();c.position.set(-40+(Math.random()-0.5)*80,0,-110+(Math.random()-0.5)*50);c.scale.set(200+Math.random()*300,200+Math.random()*300,200+Math.random()*300);scene.add(c);}
+  for(let i=0;i<25;i++){const c=m.clone();c.position.set(-40+(Math.random()-0.5)*55,0,-110+(Math.random()-0.5)*35);c.scale.setScalar(2+Math.random()*3);scene.add(c);}
 });
 loadModel('shell',m=>{
-  for(let i=0;i<25;i++){const c=m.clone();c.position.set(-35+(Math.random()-0.5)*60,0,-100+(Math.random()-0.5)*40);c.scale.set(150+Math.random()*250,150+Math.random()*250,150+Math.random()*250);c.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);scene.add(c);}
+  for(let i=0;i<15;i++){const c=m.clone();c.position.set(-35+(Math.random()-0.5)*45,0,-100+(Math.random()-0.5)*30);c.scale.setScalar(1+Math.random()*2);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
 });
-loadModel('cliff',m=>{m.position.set(60,15,-180);m.scale.set(500,500,500);});
-loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.set(800,800,800);});
+loadModel('cliff',m=>{m.position.set(60,5,-180);m.scale.setScalar(6);});
+loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.setScalar(10);});
 
 // ── Themed zone particle clusters (each act's atmosphere) ──
 const zoneParticles=[];
