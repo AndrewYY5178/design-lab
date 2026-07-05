@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Act II — The Ocean Above the Sky</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;height:100vh;cursor:none;}
+canvas{display:block;}
+#title{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:clamp(16px,2.5vw,24px);color:rgba(255,255,255,0.5);letter-spacing:0.15em;transition:opacity 2s ease;}
+#hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;font-family:'Playfair Display',serif;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;transition:opacity 1s ease;}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="title">Act II · The Ocean Above the Sky</div>
+<div id="hint">scroll —</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// ── Scene ──
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0a0a20);
+scene.fog=new THREE.FogExp2(0x0a0a20,0.00015);
+
+const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,500);
+camera.position.set(0,8,0);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
+document.body.appendChild(renderer.domElement);
+
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloom=new UnrealBloomPass(new THREE.Vector2(window.innerWidth,window.innerHeight),0.5,0.3,0.85);
+bloom.threshold=0.6;bloom.strength=1.0;bloom.radius=0.6;
+composer.addPass(bloom);
+
+// ── Lighting ──
+scene.add(new THREE.AmbientLight(0x1a1a3e,0.5));
+const moonLight=new THREE.DirectionalLight(0x8899cc,6);
+moonLight.position.set(30,60,-20);
+scene.add(moonLight);
+const warmFill=new THREE.PointLight(0xcc8899,30,120);
+warmFill.position.set(-40,10,20);
+scene.add(warmFill);
+
+// ── Starfield ──
+const SN=2000;
+const starGeo=new THREE.BufferGeometry();
+const starPos=new Float32Array(SN*3);
+for(let i=0;i<SN;i++){
+  starPos[i*3]=(Math.random()-0.5)*300;
+  starPos[i*3+1]=(Math.random()-0.5)*200+40;
+  starPos[i*3+2]=(Math.random()-0.5)*200;
+}
+starGeo.setAttribute('position',new THREE.BufferAttribute(starPos,3));
+const starMat=new THREE.PointsMaterial({color:0xccccff,size:0.3,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
+scene.add(new THREE.Points(starGeo,starMat));
+
+// ── Cloud layers (semi-transparent planes) ──
+function createCloudLayer(y,spread,opacity,color){
+  const geo=new THREE.PlaneGeometry(spread*2,spread);
+  const mat=new THREE.ShaderMaterial({
+    uniforms:{uTime:{value:0},uColor:{value:new THREE.Color(color)},uOpacity:{value:opacity}},
+    vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:`uniform float uTime;uniform vec3 uColor;uniform float uOpacity;varying vec2 vUv;
+      float noise(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      void main(){float n=noise(vUv*8.0+uTime*0.02);n+=noise(vUv*16.0-uTime*0.01)*0.5;n+=noise(vUv*32.0+uTime*0.03)*0.25;n/=1.75;
+      float a=smoothstep(0.35,0.55,n)*uOpacity;gl_FragColor=vec4(uColor,a);}`,
+    transparent:true,depthWrite:false,side:THREE.DoubleSide,
+  });
+  const mesh=new THREE.Mesh(geo,mat);
+  mesh.rotation.x=-Math.PI/2;mesh.position.y=y;
+  return mesh;
+}
+const clouds=[
+  createCloudLayer(-5,200,0.35,0x443366),
+  createCloudLayer(5,180,0.3,0x664466),
+  createCloudLayer(15,220,0.25,0x554477),
+  createCloudLayer(25,160,0.2,0x445588),
+];
+clouds.forEach(c=>scene.add(c));
+
+// ── Floating island ──
+function createIsland(x,y,z){
+  const group=new THREE.Group();
+  group.position.set(x,y,z);
+  // Main rock body
+  const rockGeo=new THREE.IcosahedronGeometry(8,2);
+  // Distort vertices for organic shape
+  const pos=rockGeo.attributes.position;
+  for(let i=0;i<pos.count;i++){pos.setX(i,pos.getX(i)*(0.6+Math.random()*0.8));pos.setY(i,pos.getY(i)*(0.3+Math.random()*0.3));pos.setZ(i,pos.getZ(i)*(0.6+Math.random()*0.8));}
+  rockGeo.computeVertexNormals();
+  const rockMat=new THREE.MeshStandardMaterial({color:0x3a3a5a,roughness:0.6,metalness:0.1});
+  group.add(new THREE.Mesh(rockGeo,rockMat));
+  // Downward roots
+  for(let i=0;i<8;i++){
+    const rootGeo=new THREE.CylinderGeometry(0.2,0.4,6+Math.random()*8,6);
+    const root=new THREE.Mesh(rootGeo,rockMat);
+    root.position.set((Math.random()-0.5)*5,-3,(Math.random()-0.5)*5);
+    group.add(root);
+  }
+  // Waterfall particles
+  const wfGeo=new THREE.BufferGeometry();
+  const wfN=200;const wfPos=new Float32Array(wfN*3);
+  for(let i=0;i<wfN;i++){wfPos[i*3]=(Math.random()-0.5)*6;wfPos[i*3+1]=-Math.random()*25;wfPos[i*3+2]=(Math.random()-0.5)*6;}
+  wfGeo.setAttribute('position',new THREE.BufferAttribute(wfPos,3));
+  const wfMat=new THREE.PointsMaterial({color:0xaaccee,size:0.3,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false});
+  group.add(new THREE.Points(wfGeo,wfMat));
+  group.userData={wfGeo,wfPos,wfN};
+  return group;
+}
+const islands=[createIsland(-30,10,-20),createIsland(50,15,10),createIsland(-60,20,30)];
+islands.forEach(i=>scene.add(i));
+
+// ── Load whale ──
+const whales=[];
+const loader=new GLTFLoader();
+for(let i=0;i<5;i++){
+  loader.load('../act1-threshold.glb',()=>{}); // dummy
+}
+loader.load('whale.glb',(gltf)=>{
+  for(let i=0;i<5;i++){
+    const w=gltf.scene.clone(true);
+    w.traverse(c=>{if(c.isMesh){c.material=new THREE.MeshPhysicalMaterial({color:0xeeeeff,roughness:0.2,metalness:0,transmission:0.7,thickness:1.5,envMapIntensity:0.5,clearcoat:0.3});}});
+    w.position.set((Math.random()-0.5)*140,15+Math.random()*40,(Math.random()-0.5)*100);
+    w.scale.setScalar(0.5+Math.random()*0.8);
+    w.rotation.y=Math.random()*Math.PI*2;
+    w.rotation.z=(Math.random()-0.5)*0.4;
+    scene.add(w);
+    whales.push({mesh:w,speed:0.02+Math.random()*0.04,amp:Math.random()*3,phase:Math.random()*Math.PI*2});
+  }
+});
+
+// ── Butterfly particles ──
+const BN=500;
+const bGeo=new THREE.BufferGeometry();
+const bPos=new Float32Array(BN*3),bData=new Float32Array(BN*3);
+for(let i=0;i<BN;i++){
+  bPos[i*3]=(Math.random()-0.5)*120;
+  bPos[i*3+1]=(Math.random()-0.5)*60+30;
+  bPos[i*3+2]=(Math.random()-0.5)*80;
+  bData[i*3]=Math.random()*Math.PI*2;bData[i*3+1]=Math.random()*Math.PI*2;bData[i*3+2]=Math.random()*Math.PI*2;
+}
+bGeo.setAttribute('position',new THREE.BufferAttribute(bPos,3));
+const bMat=new THREE.PointsMaterial({color:0xffffff,size:0.15,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false});
+const butterflies=new THREE.Points(bGeo,bMat);
+scene.add(butterflies);
+
+// ── Camera ──
+let progress=0;
+const camPathX=(p)=>Math.sin(p*0.8)*60+Math.cos(p*0.3)*30;
+const camPathY=(p)=>5+Math.sin(p*0.5)*15;
+const camPathZ=(p)=>Math.cos(p*0.6)*40;
+
+function onWheel(e){e.preventDefault();progress+=e.deltaY*0.00025;progress=Math.max(0,Math.min(1,progress));}
+window.addEventListener('wheel',onWheel,{passive:false});
+let ty=0;
+window.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;});
+window.addEventListener('touchmove',e=>{const dy=ty-e.touches[0].clientY;ty=e.touches[0].clientY;progress+=dy*0.00025;progress=Math.max(0,Math.min(1,progress));});
+
+// ── Animate ──
+function animate(t){
+  requestAnimationFrame(animate);
+  const s=t*0.001;
+  const cp=progress||0.001;
+
+  // Camera
+  const tx=camPathX(cp),ty=camPathY(cp),tz=camPathZ(cp);
+  camera.position.lerp(new THREE.Vector3(tx,ty,tz),0.02);
+  camera.lookAt(tx+Math.cos(cp*0.4)*20,ty-5,tz+Math.sin(cp*0.4)*20);
+
+  // Clouds drift
+  clouds.forEach((c,i)=>{c.material.uniforms.uTime.value=s;c.position.x=Math.sin(s*0.1+i)*20;});
+
+  // Whales swim
+  whales.forEach(w=>{
+    w.mesh.position.x+=w.speed;w.mesh.position.y+=Math.sin(s*w.phase)*w.amp*0.02;
+    if(w.mesh.position.x>80)w.mesh.position.x=-80;
+    w.mesh.rotation.z=Math.sin(s*0.5+w.phase)*0.1;
+  });
+
+  // Butterflies
+  const bp=bGeo.attributes.position.array;
+  for(let i=0;i<BN;i++){bp[i*3]+=Math.sin(s*2+bData[i*3])*0.05;bp[i*3+1]+=Math.cos(s*1.5+bData[i*3+1])*0.03;bp[i*3+2]+=Math.sin(s*1.8+bData[i*3+2])*0.04;}
+  bGeo.attributes.position.needsUpdate=true;
+
+  // Island waterfalls
+  islands.forEach(i=>{
+    const wp=i.userData.wfGeo.attributes.position.array;
+    for(let j=0;j<i.userData.wfN;j++){wp[j*3+1]-=0.08;if(wp[j*3+1]<-20)wp[j*3+1]=0;}
+    i.userData.wfGeo.attributes.position.needsUpdate=true;
+  });
+
+  // Stars twinkle
+  starMat.opacity=0.5+Math.sin(s*0.3)*0.2;
+
+  document.getElementById('hint').style.opacity=progress>0.05?'0':'1';
+  document.getElementById('title').style.opacity=progress>0.3?'0':'1';
+
+  composer.render();
+}
+requestAnimationFrame(animate);
+
+window.addEventListener('resize',()=>{
+  const w=window.innerWidth,h=window.innerHeight;
+  camera.aspect=w/h;camera.updateProjectionMatrix();
+  renderer.setSize(w,h);composer.setSize(w,h);
+});
+</script>
+</body>
+</html>
