@@ -103,13 +103,15 @@ const totalModels=9;
 const loadFill=document.getElementById('loadFill');
 
 function loadModel(name,onLoad){
+  const el=document.createElement('div');el.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:101;font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:0.06em;pointer-events:none;';el.textContent=`Loading ${name}...`;document.getElementById('loading').appendChild(el);
   loader.load(MODEL_DIR+name+'.glb',gltf=>{
     const m=gltf.scene;m.name=name;
     m.traverse(c=>{if(c.isMesh){c.material.roughness=Math.min(c.material.roughness||0.5,0.6);c.material.metalness=Math.max(c.material.metalness||0,0.05);}});
     models[name]=m;scene.add(m);loadedCount++;loadFill.style.width=(loadedCount/totalModels*100)+'%';
+    el.textContent=`${name} ✓`;
     if(onLoad)onLoad(m);
-    if(loadedCount===totalModels)document.getElementById('loading').classList.add('hidden');
-  });
+    if(loadedCount>=3)document.getElementById('loading').classList.add('hidden'); // Start after 3 models
+  },undefined,()=>{el.textContent=`${name} ✗ failed`;loadedCount++;loadFill.style.width=(loadedCount/totalModels*100)+'%';});
 }
 
 // Place models in their zones
