@@ -114,37 +114,28 @@ function loadModel(name,onLoad){
   },undefined,()=>{el.textContent=`${name} ✗ failed`;loadedCount++;loadFill.style.width=(loadedCount/totalModels*100)+'%';});
 }
 
-// Place models — balanced layout
-// Act II: Whales in the sky (left/center/right lanes, high up)
+// Place models — visible scales
 loadModel('whale',m=>{
-  for(let i=0;i<6;i++){const c=m.clone();c.position.set(-40+i*20,25+Math.random()*15,75+Math.random()*15);c.scale.setScalar(0.32+Math.random()*0.24);c.rotation.set(0,Math.random()*Math.PI*2,Math.random()*0.15);scene.add(c);}
+  for(let i=0;i<6;i++){const c=m.clone();c.position.set(-40+i*20,25+Math.random()*15,75+Math.random()*15);c.scale.setScalar(6+Math.random()*4);c.rotation.set(0,Math.random()*Math.PI*2,Math.random()*0.15);scene.add(c);}
 });
-// Act III: Sunflowers — dense field, spread wide
 loadModel('sunflower',m=>{
-  for(let i=0;i<60;i++){const c=m.clone();c.position.set(-10+(Math.random()-0.5)*90,-2,2+(Math.random()-0.5)*25);c.scale.setScalar(0.04+Math.random()*0.08);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
+  for(let i=0;i<60;i++){const c=m.clone();c.position.set(-10+(Math.random()-0.5)*90,-2,2+(Math.random()-0.5)*25);c.scale.setScalar(2+Math.random()*4);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
 });
-// Act III center: Deer — separate from sunflowers, near the piano side
 loadModel('deer',m=>{
-  for(let i=0;i<3;i++){const c=m.clone();c.position.set(-20+i*15,0,10+i*5);c.scale.setScalar(0.24+Math.random()*0.18);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
+  for(let i=0;i<3;i++){const c=m.clone();c.position.set(-20+i*15,0,10+i*5);c.scale.setScalar(6+Math.random()*3);c.rotation.y=Math.random()*Math.PI*2;scene.add(c);}
 });
-// Act IV: Crystal forest — smaller, more numerous
 loadModel('crystal',m=>{
-  for(let i=0;i<40;i++){const c=m.clone();c.position.set(-30+(Math.random()-0.5)*60,0,-40+(Math.random()-0.5)*40);c.scale.setScalar(0.02+Math.random()*0.04);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
+  for(let i=0;i<40;i++){const c=m.clone();c.position.set(-30+(Math.random()-0.5)*60,0,-40+(Math.random()-0.5)*40);c.scale.setScalar(1+Math.random()*2);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
 });
-// Act V: Piano — 3x larger
-loadModel('piano',m=>{m.position.set(-60,2,-60);m.scale.setScalar(0.36);});
-// Act VI-VII: Tulips
+loadModel('piano',m=>{m.position.set(-60,2,-60);m.scale.setScalar(7);});
 loadModel('tulip',m=>{
-  for(let i=0;i<30;i++){const c=m.clone();c.position.set(-45+(Math.random()-0.5)*60,0,-110+(Math.random()-0.5)*40);c.scale.setScalar(0.04+Math.random()*0.06);scene.add(c);}
+  for(let i=0;i<30;i++){const c=m.clone();c.position.set(-45+(Math.random()-0.5)*60,0,-110+(Math.random()-0.5)*40);c.scale.setScalar(2+Math.random()*3);scene.add(c);}
 });
-// Act VI: Shells
 loadModel('shell',m=>{
-  for(let i=0;i<20;i++){const c=m.clone();c.position.set(-35+(Math.random()-0.5)*50,0,-100+(Math.random()-0.5)*35);c.scale.setScalar(0.02+Math.random()*0.04);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
+  for(let i=0;i<20;i++){const c=m.clone();c.position.set(-35+(Math.random()-0.5)*50,0,-100+(Math.random()-0.5)*35);c.scale.setScalar(1+Math.random()*2);c.rotation.set(Math.random(),Math.random(),Math.random());scene.add(c);}
 });
-// Act VIII: Cliff — 7x larger
-loadModel('cliff',m=>{m.position.set(60,5,-180);m.scale.setScalar(0.84);});
-// Act IX: Seed — 5x larger
-loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.setScalar(1.0);});
+loadModel('cliff',m=>{m.position.set(60,5,-180);m.scale.setScalar(8);});
+loadModel('seed',m=>{m.position.set(0,0,-220);m.scale.setScalar(12);});
 
 // ── ANDREAM Morph Particles — scatter at first, converge at Act X ──
 function buildTextTargets(text,spread){
