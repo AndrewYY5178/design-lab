@@ -140,7 +140,7 @@ const fMat=new THREE.PointsMaterial({color:0xffeebb,size:0.4,transparent:true,op
 const feathers=new THREE.Points(fGeo,fMat);scene.add(feathers);
 
 // ── Camera ──
-let progress=0;
+let remoteProgress=0;let progress=0;
 function onWheel(e){e.preventDefault();progress+=e.deltaY*0.0002;progress=Math.max(0,Math.min(1,progress));}
 window.addEventListener('wheel',onWheel,{passive:false});
 

@@ -38,7 +38,7 @@ for(let i=0;i<FN;i++){fPos[i*3]=(Math.random()-0.5)*40;fPos[i*3+1]=Math.random()
 fGeo.setAttribute('position',new THREE.BufferAttribute(fPos,3));
 const fM=new THREE.PointsMaterial({color:0xffffff,size:0.15,transparent:true,opacity:0.4,blending:THREE.AdditiveBlending,depthWrite:false});S.add(new THREE.Points(fGeo,fM));
 
-let progress=0;
+let remoteProgress=0;let progress=0;
 function onWheel(e){e.preventDefault();progress+=e.deltaY*0.0002;progress=Math.max(0,Math.min(1,progress));}
 window.addEventListener('wheel',onWheel,{passive:false});
 

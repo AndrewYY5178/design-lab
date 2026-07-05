@@ -84,7 +84,7 @@ const pMat=new THREE.PointsMaterial({color:0xaaaadd,size:0.08,transparent:true,o
 const particles=new THREE.Points(pGeo,pMat);scene.add(particles);
 
 // Camera
-let progress=0;
+let remoteProgress=0;let progress=0;
 function onWheel(e){e.preventDefault();progress+=e.deltaY*0.0002;progress=Math.max(0,Math.min(1,progress));}
 window.addEventListener('wheel',onWheel,{passive:false});
 

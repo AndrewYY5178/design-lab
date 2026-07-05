@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AndDream — A Journey Beyond Reality</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;height:100vh;width:100vw;font-family:'Playfair Display',serif;}
+
+/* Stage (iframe container) */
+#stage{position:fixed;inset:0;z-index:1;}
+#stage iframe{width:100%;height:100%;border:none;}
+
+/* Transition overlay */
+#overlay{position:fixed;inset:0;z-index:10;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0);transition:background 1s ease;}
+#overlay.active{background:rgba(0,0,0,1);}
+#overlay .title{font-size:clamp(24px,5vw,48px);font-weight:900;letter-spacing:0.12em;color:#fff;opacity:0;transition:opacity 1.5s ease;text-align:center;}
+#overlay .title.show{opacity:1;}
+#overlay .sub{font-size:clamp(12px,2vw,18px);color:rgba(255,255,255,0.5);margin-top:12px;letter-spacing:0.1em;opacity:0;transition:opacity 1.5s ease 0.3s;font-style:italic;}
+#overlay .sub.show{opacity:1;}
+
+/* Progress bar */
+#progress{position:fixed;bottom:0;left:0;height:2px;background:rgba(255,255,255,0.3);z-index:20;transition:width 0.1s linear;pointer-events:none;}
+
+/* Hint */
+#hint{position:fixed;bottom:40px;right:24px;z-index:20;pointer-events:none;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:0.08em;transition:opacity 0.5s ease;}
+#actLabel{position:fixed;top:24px;left:24px;z-index:20;pointer-events:none;font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;}
+</style>
+</head>
+<body>
+
+<div id="stage"><iframe id="actFrame" src="about:blank"></iframe></div>
+<div id="overlay"><div class="title" id="overlayTitle"></div><div class="sub" id="overlaySub"></div></div>
+<div id="progress"></div>
+<div id="hint">press → to skip</div>
+<div id="actLabel"></div>
+
+<script>
+const ACTS=[
+  {key:'',        title:'Act I',   sub:'The Threshold of Heaven'},
+  {key:'act2/',   title:'Act II',  sub:'The Ocean Above the Sky'},
+  {key:'act3/',   title:'Act III', sub:'The Valley of Sunflowers'},
+  {key:'act4/',   title:'Act IV',  sub:'The Forest of Glass Dew'},
+  {key:'act5/',   title:'Act V',   sub:'The Piano of the River'},
+  {key:'act6/',   title:'Act VI',  sub:'The Garden Beneath the Moon'},
+  {key:'act7/',   title:'Act VII', sub:'The Rain of Pearls'},
+  {key:'act8/',   title:'Act VIII',sub:'The Deer Between Stars'},
+  {key:'act9/',   title:'Act IX',  sub:'The Birth of Dreams'},
+  {key:'act10/',  title:'Act X',   sub:'And...'},
+];
+
+const ACT_DURATION=20; // seconds per act
+let currentAct=0;
+let actStartTime=0;
+let actElapsed=0;
+let isTransitioning=false;
+
+const frame=document.getElementById('actFrame');
+const overlay=document.getElementById('overlay');
+const overlayTitle=document.getElementById('overlayTitle');
+const overlaySub=document.getElementById('overlaySub');
+const progressBar=document.getElementById('progress');
+const actLabel=document.getElementById('actLabel');
+const hint=document.getElementById('hint');
+
+function loadAct(i){
+  if(i>=ACTS.length){i=0;}
+  currentAct=i;
+  actStartTime=performance.now()/1000;
+  actElapsed=0;
+  const act=ACTS[i];
+  frame.src=act.key+'index.html';
+  actLabel.textContent=`${act.title} · ${act.sub}  (${i+1}/10)`;
+}
+
+function showTransition(i,callback){
+  isTransitioning=true;
+  const act=ACTS[i];
+  overlayTitle.textContent=act.title;
+  overlaySub.textContent=act.sub;
+  overlay.classList.add('active');
+  overlayTitle.classList.add('show');
+  overlaySub.classList.add('show');
+  // Hold for 2.5s then fade out
+  setTimeout(()=>{
+    overlayTitle.classList.remove('show');
+    overlaySub.classList.remove('show');
+    setTimeout(()=>{
+      overlay.classList.remove('active');
+      isTransitioning=false;
+      loadAct(i);
+      if(callback)callback();
+    },800);
+  },2500);
+}
+
+// Auto-play: simulate scroll events on iframe
+let lastProgress=0;
+function tick(){
+  requestAnimationFrame(tick);
+  if(isTransitioning)return;
+  const now=performance.now()/1000;
+  actElapsed=now-actStartTime;
+  const p=Math.min(1,actElapsed/ACT_DURATION);
+  progressBar.style.width=(p*100)+'%';
+  // Simulate scroll: delta = progress increment since last tick
+  const delta=(p-lastProgress)*3000;
+  if(delta>0){
+    try{frame.contentWindow.dispatchEvent(new WheelEvent('wheel',{deltaY:delta,bubbles:true}));}catch(e){}
+  }
+  lastProgress=p;
+  if(p>=1){lastProgress=0;showTransition((currentAct+1)%ACTS.length);}
+}
+
+function loadAct(i){
+  if(i>=ACTS.length){i=0;}
+  currentAct=i;
+  actStartTime=performance.now()/1000;
+  actElapsed=0;
+  lastProgress=0;
+  const act=ACTS[i];
+  frame.src=act.key+'index.html';
+  actLabel.textContent=`${act.title} · ${act.sub}  (${i+1}/10)`;
+}
+
+// Keyboard controls
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'){
+    e.preventDefault();
+    if(isTransitioning)return;
+    showTransition((currentAct+1)%ACTS.length);
+  }
+  if(e.key==='ArrowLeft'){
+    e.preventDefault();
+    if(isTransitioning)return;
+    const prev=(currentAct-1+ACTS.length)%ACTS.length;
+    showTransition(prev);
+  }
+});
+
+// Start
+showTransition(0,()=>{requestAnimationFrame(tick);});
+</script>
+</body>
+</html>

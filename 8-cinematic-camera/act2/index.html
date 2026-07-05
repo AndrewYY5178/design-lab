@@ -160,7 +160,7 @@ const butterflies=new THREE.Points(bGeo,bMat);
 scene.add(butterflies);
 
 // ── Camera ──
-let progress=0;
+let remoteProgress=0;let progress=0;
 const camPathX=(p)=>Math.sin(p*0.8)*60+Math.cos(p*0.3)*30;
 const camPathY=(p)=>5+Math.sin(p*0.5)*15;
 const camPathZ=(p)=>Math.cos(p*0.6)*40;

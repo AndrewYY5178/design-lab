@@ -50,7 +50,7 @@ for(let i=0;i<BN;i++){bPos[i*3]=(Math.random()-0.5)*40;bPos[i*3+1]=Math.random()
 bGeo.setAttribute('position',new THREE.BufferAttribute(bPos,3));
 const bM=new THREE.PointsMaterial({color:0xffddff,size:0.12,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false});S.add(new THREE.Points(bGeo,bM));
 
-let progress=0;
+let remoteProgress=0;let progress=0;
 function onWheel(e){e.preventDefault();progress+=e.deltaY*0.0002;progress=Math.max(0,Math.min(1,progress));}
 window.addEventListener('wheel',onWheel,{passive:false});
 

@@ -43,7 +43,7 @@ for(let i=0;i<BN;i++){bPos[i*3]=(Math.random()-0.5)*35;bPos[i*3+1]=3+Math.random
 bGeo.setAttribute('position',new THREE.BufferAttribute(bPos,3));
 const bMat=new THREE.PointsMaterial({color:0xffddff,size:0.1,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false});S.add(new THREE.Points(bGeo,bMat));
 
-let progress=0;
+let remoteProgress=0;let progress=0;
 function onWheel(e){e.preventDefault();progress+=e.deltaY*0.0002;progress=Math.max(0,Math.min(1,progress));}
 window.addEventListener('wheel',onWheel,{passive:false});
 

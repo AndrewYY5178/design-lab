@@ -52,7 +52,7 @@ function createTextParticles(){
 }
 const textData=createTextParticles();
 
-let progress=0;
+let remoteProgress=0;let progress=0;
 function onWheel(e){e.preventDefault();progress+=e.deltaY*0.00015;progress=Math.max(0,Math.min(1,progress));}
 window.addEventListener('wheel',onWheel,{passive:false});
 
