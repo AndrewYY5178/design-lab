@@ -91,7 +91,7 @@ function makeUnopt(scene){
     pos[i*3]=Math.cos(th)*Math.sin(ph)*r;pos[i*3+1]=Math.sin(th)*Math.sin(ph)*r*0.5;pos[i*3+2]=Math.cos(ph)*r;
   }
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const mat=new THREE.PointsMaterial({color:0xc8c4c0,size:0.05,map:gt,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false});
+  const mat=new THREE.PointsMaterial({color:0xff8866,size:0.18,map:gt,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
   const pts=new THREE.Points(geo,mat);scene.add(pts);
   return{geo,pos,pts};
 }
@@ -112,7 +112,7 @@ function makeOpt(scene){
     pos[i*3]=base[i*3]=Math.cos(th)*Math.sin(ph)*r;pos[i*3+1]=base[i*3+1]=Math.sin(th)*Math.sin(ph)*r*0.5;pos[i*3+2]=base[i*3+2]=Math.cos(ph)*r;
   }
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const mat=new THREE.PointsMaterial({color:0xc8c4c0,size:0.05,map:gt,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false});
+  const mat=new THREE.PointsMaterial({color:0x66bbff,size:0.18,map:gt,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false});
   const pts=new THREE.Points(geo,mat);scene.add(pts);
   return{geo,pos,base};
 }
