@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AndDream — 200K Benchmark</title>
+<title>AndDream — 500K Benchmark</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 body{background:#050508;overflow:hidden;height:100vh;display:flex;font-family:'Playfair Display',sans-serif;}
@@ -26,18 +26,18 @@ body{background:#050508;overflow:hidden;height:100vh;display:flex;font-family:'P
 <body>
 
 <div class="panel" id="pL">
-  <div class="label"><div class="title">NAIVE — 每帧 20 万次 Math.sin 调用</div><div class="fps" id="fL">--</div><div class="detail" id="dL">200K particles</div></div>
+  <div class="label"><div class="title">NAIVE — 每帧 20 万次 Math.sin 调用</div><div class="fps" id="fL">--</div><div class="detail" id="dL">500K particles</div></div>
 </div>
 <div class="panel" id="pR">
-  <div class="label"><div class="title">OPTIMIZED — 预计算相位 · 零额外分配</div><div class="fps" id="fR">--</div><div class="detail" id="dR">200K particles</div></div>
+  <div class="label"><div class="title">OPTIMIZED — 预计算相位 · 零额外分配</div><div class="fps" id="fR">--</div><div class="detail" id="dR">500K particles</div></div>
 </div>
 
 <script type="module">
 import * as THREE from 'three';
 
-const N=200000;
+const N=500000;
 const R=3;
-const SIZE=0.15;
+const SIZE=0.12;
 
 function glow(){
   const c=document.createElement('canvas');c.width=64;c.height=64;
@@ -94,12 +94,14 @@ function upNaive(d,t){
   const p=d.pos;
   for(let i=0;i<N;i++){
     const i3=i*3;
-    // Heavy: fresh trig calls every frame for every particle
-    p[i3]  +=Math.sin(t*2.7+i*0.017)*0.004;
-    p[i3+1]+=Math.cos(t*2.1+i*0.013)*0.003;
-    p[i3+2]+=Math.sin(t*2.4+i*0.019)*0.0035;
-    // Extra wasted work: compute stuff we don't use
-    Math.sqrt(p[i3]*p[i3]+p[i3+1]*p[i3+1]);
+    // Heavy: 6 trig calls + 2 sqrt per particle every frame
+    const dx=Math.sin(t*3.1+i*0.023)*0.005+Math.cos(t*1.7+i*0.011)*0.003;
+    const dy=Math.cos(t*2.5+i*0.017)*0.004+Math.sin(t*1.9+i*0.013)*0.002;
+    const dz=Math.sin(t*2.8+i*0.019)*0.004+Math.cos(t*2.2+i*0.016)*0.003;
+    p[i3]+=dx;p[i3+1]+=dy;p[i3+2]+=dz;
+    // Wasted: distance calc we never use
+    const dist=Math.sqrt(p[i3]*p[i3]+p[i3+1]*p[i3+1]+p[i3+2]*p[i3+2]);
+    if(dist>40)p[i3]*=0.99; // pointless branch, barely triggers
   }
   d.geo.attributes.position.needsUpdate=true;
 }
@@ -169,8 +171,8 @@ function animate(t){
   eL.textContent=fl||'--';eR.textContent=fr||'--';
   if(fl&&fr&&fl>0){
     const gain=Math.round((fr-fl)/fl*100);
-    document.getElementById('dL').textContent=`200K particles · ${fl} fps`;
-    document.getElementById('dR').textContent=`200K particles · ${fr} fps${gain>0?' (+'+gain+'%)':''}`;
+    document.getElementById('dL').textContent=`500K particles · ${fl} fps`;
+    document.getElementById('dR').textContent=`500K particles · ${fr} fps${gain>0?' (+'+gain+'%)':''}`;
   }
 }
 
